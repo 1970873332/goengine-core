@@ -1,0 +1,20 @@
+{
+    "name": "@goengine/core",
+    "version": "0.1.0",
+    "description": "Hello GoEngine.core",
+    "license": "MIT",
+    "author": "Mr.Rui",
+    "type": "module",
+    "dependencies": {
+        "exceljs": "^4.4.0",
+        "js-md5": "^0.8.3",
+        "matter-js": "^0.20.0",
+        "otpauth": "^9.4.1",
+        "three": "^0.181.2"
+    },
+    "devDependencies": {
+        "@types/matter-js": "^0.20.2",
+        "@types/three": "^0.181.0",
+        "@webgpu/types": "^0.1.66"
+    }
+}
