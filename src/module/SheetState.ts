@@ -9,8 +9,8 @@ import {
     Row,
     Worksheet,
 } from "exceljs";
-import { Vector4 } from "../objects/math/Index";
-import { ArrayUtils } from "../utils/Array";
+import { Vector4 } from "../object/math/Index";
+import { ArrayUtils } from "../util/Array";
 
 /**
  * 表格状态
@@ -65,28 +65,29 @@ export default class SheetState<
      * 从表格获取状态
      * @param values
      */
-    public static fromSheet(worksheet: Worksheet, head?: boolean): SheetState {
+    public static fromSheet(worksheet: Worksheet, use_head?: boolean): SheetState {
         const state: SheetState = new SheetState();
-        state.bindSheet(worksheet, head ? [] : void 0);
+        state.bindSheet(worksheet, use_head ? [] : void 0);
         return state;
     }
 
-    /**
-     * 当前行
-     */
-    protected _index: number = 0;
     /**
      * 表格
      */
     public readonly sheet?: Worksheet;
     /**
-     * 是否有表头
-     */
-    public readonly beingHead: boolean = false;
-    /**
      * 管道
      */
-    public pipe?: Generator<Row, void, void>;
+    public readonly pipe?: Generator<Row, void, void>;
+    /**
+     * 是否有表头
+     */
+    public readonly useHead: boolean = false;
+
+    /**
+     * 当前行
+     */
+    protected index_source: number = 0;
 
     /**
      * 获取当前行
@@ -98,7 +99,7 @@ export default class SheetState<
      * 获取表头
      */
     public get head(): Row | undefined {
-        if (!this.beingHead) return void 0;
+        if (!this.useHead) return void 0;
         return this.sheet?.getRow(1);
     }
     /**
@@ -119,15 +120,15 @@ export default class SheetState<
      * 当前行索引
      */
     public get index(): number {
-        return this._index;
+        return this.index_source;
     }
     protected set index(value: number) {
-        this._index = value;
+        this.index_source = value;
     }
 
     /**
-     * 获取行数据
-     * @param format
+     * 数据管道
+     * @returns 
      */
     protected *pipeline(): Generator<Row, void, void> {
         if (!this.sheet) return;
@@ -137,9 +138,9 @@ export default class SheetState<
         return;
     }
     /**
-     * 从表头获取位置
-     * @param name
-     * @returns
+     * 从表头获取位置,如果没有找到则返回name
+     * @param name 
+     * @returns 
      */
     public locationFromHead(name: keyof E & string): string | number {
         const list: CellValue[] = ArrayUtils.normalize(this.head?.values);
@@ -150,8 +151,9 @@ export default class SheetState<
         return index;
     }
     /**
-     * 从表头获取位置
-     * @param name
+     * 从表头获取位置,如果没有找到则返回表头单元格数量
+     * @param name 
+     * @returns 
      */
     public locationFromHeadFormat(name: keyof E & string): number {
         const location: string | number = this.locationFromHead(name);
@@ -159,19 +161,14 @@ export default class SheetState<
     }
     /**
      * 根据表头链接单元格数据
-     * @param name
+     * @param name 
+     * @param format 
+     * @throws
+     * @returns 
      */
     public cellValueOfRowLinkHead(
         name: keyof E & string,
-        format?: true,
-    ): string | undefined;
-    public cellValueOfRowLinkHead(
-        name: keyof E & string,
-        format?: false,
-    ): CellValue | undefined;
-    public cellValueOfRowLinkHead(
-        name: keyof E & string,
-        format: boolean = true,
+        format: boolean | undefined = true,
     ): CellValue | string | undefined {
         try {
             const index: number | string = this.locationFromHead(name),
@@ -181,18 +178,19 @@ export default class SheetState<
             if (!cell) return;
             return format ? SheetState.formatValue(cell.value) : cell.value;
         } catch {
-            throw `获取单元格数据失败,无效的索引-${name}`;
+            throw new Error(`获取单元格数据失败,无效的索引-${name}`);
         }
     }
     /**
      * 绑定工作表
-     * @param sheet
+     * @param sheet 
+     * @param head 
      */
     public bindSheet(sheet: Worksheet | undefined, head?: string[]): void {
         Object.assign(this, {
             sheet,
             pipe: this.pipeline(),
-            beingHead: !!head,
+            useHead: !!head,
             index: ~~!!head,
         } as Partial<this>);
         head?.forEach((value) =>
@@ -201,16 +199,18 @@ export default class SheetState<
     }
     /**
      * 设置单元格
-     * @param index
-     * @param value
-     * @returns
+     * @param value 
+     * @param index 
+     * @param row 
+     * @throws
+     * @returns 
      */
     public setCell(
         value: CellValue,
         index: number | string = this.cellCount,
         row: Row | undefined = this.row,
     ): CellValue | undefined {
-        if (!row) return;
+        if (!row) return void 0;
         if (index !== -1 || (typeof index === "string" && index)) {
             try {
                 const cell: Cell = row.getCell(
@@ -225,12 +225,14 @@ export default class SheetState<
                 };
                 return (cell.value = value);
             } catch {
-                throw `设置单元格数据失败,无效的索引-${index}`;
+                throw new Error(`设置单元格数据失败,无效的索引-${index}`);
             }
         }
     }
     /**
      * 添加图片
+     * @param id 
+     * @param value 
      */
     public addImage(id: number, value: Vector4): void {
         const { x, y, width, height } = value,
@@ -246,9 +248,11 @@ export default class SheetState<
     }
     /**
      * 获取所有行
+     * @param excludeHead 
+     * @returns 
      */
     public toArray(excludeHead?: boolean): CellValue[][] {
-        const start: number = ~~!!(excludeHead && this.beingHead) + 1,
+        const start: number = ~~!!(excludeHead && this.useHead) + 1,
             length: number = this.sheet?.rowCount ?? 0;
         return (
             this.sheet
@@ -257,17 +261,10 @@ export default class SheetState<
         );
     }
     /**
-     * 重置管道
-     */
-    public destroy(): void {
-        Object.assign(this, {
-            sheet: undefined,
-            pipe: undefined,
-            index: 0,
-        } as Partial<this>);
-    }
-    /**
      * 替换行
+     * @param start 
+     * @param rows 
+     * @throws
      */
     public replaceRows(start: number, rows: CellValue[][]): void {
         rows.forEach((row, index) => {
@@ -277,5 +274,15 @@ export default class SheetState<
             if (!sheetRow) throw new Error("数据长度不足");
             sheetRow.values = row;
         });
+    }
+    /**
+     * 重置
+     */
+    public reset(): void {
+        Object.assign(this, {
+            sheet: undefined,
+            pipe: undefined,
+            index: 0,
+        } as Partial<this>);
     }
 }
