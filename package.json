@@ -14,7 +14,6 @@
     },
     "devDependencies": {
         "@types/matter-js": "^0.20.2",
-        "@types/three": "^0.181.0",
-        "@webgpu/types": "^0.1.66"
+        "@types/three": "^0.181.0"
     }
 }

@@ -1,11 +1,11 @@
 import DuplicatableComponent from "@core/component/fussy/Duplicatable";
 import { TaskComponentEvent } from "@core/component/Task";
 import MessageQueueManager, { MessageQueueManagerEvent } from "@core/manager/MessageQueue";
+import ResponseAttribute from "@core/object/attribute/Response";
+import { Quaternion, Vector3 } from "@core/object/math/Index";
+import Euler, { EulerType } from "@core/object/math/transfrom/Euler";
+import { Vector3Type } from "@core/object/math/vector/Vector3";
 import { ArrayUtils } from "@core/util/Array";
-import ResponseAttribute from "../attribute/Response";
-import { Quaternion, Vector3 } from "../math/Index";
-import Euler, { EulerType } from "../math/transfrom/Euler";
-import { Vector3Type } from "../math/vector/Vector3";
 
 /**
  * 基础节点

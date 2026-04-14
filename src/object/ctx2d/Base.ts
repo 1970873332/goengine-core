@@ -1,5 +1,5 @@
 import { Vector4 } from "@core/object/math/Index";
-import BaseNode, { BaseNodeConfig, BaseNodeEvent } from "../Base";
+import BaseNode, { BaseNodeConfig, BaseNodeEvent } from "@core/object/Node";
 
 /**
  * 基础ctx节点
@@ -50,5 +50,5 @@ interface IConfig extends BaseNodeConfig { }
 
 interface IEvent extends BaseNodeEvent { }
 
-export { IStyle as BaseCTXNodeStyle, IConfig as BaseCTXNodeConfig, IEvent as BaseCTXNodeEvent };
+export { IConfig as BaseCTXNodeConfig, IEvent as BaseCTXNodeEvent, IStyle as BaseCTXNodeStyle };
 
