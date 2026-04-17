@@ -45,7 +45,7 @@ export default class Euler extends Vector<TEuler, Record<any, any>> {
         0,
     ).bindCallback(this.trigger.bind(this));
 
-    public readonly rorder = new ResponseAttribute<TOrder>(
+    public readonly rorder = new ResponseAttribute<TOrder, any>(
         "XYZ",
     ).bindCallback(this.trigger.bind(this));
 

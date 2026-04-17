@@ -49,23 +49,23 @@ export default abstract class TaskComponent<
     /**
      * 入口函数
      */
-    protected main(): void {}
+    protected main(): void { }
     /**
      * 初始化
      */
-    protected init(): void {}
+    protected init(): void { }
     /**
      * 事件处理
      */
-    protected addEvents(): void {}
+    protected addEvents(): void { }
     /**
      * 后续脚本
      */
-    protected async applyScript(): Promise<void> {}
+    protected async applyScript(): Promise<void> { }
     /**
      * 准备就绪
      */
-    protected ready(): void {}
+    protected ready(): void { }
     /**
      * 更新
      * @param delta
@@ -83,6 +83,7 @@ export default abstract class TaskComponent<
     }
 }
 
-interface IEvent {}
+interface IEvent { }
 
 export { IEvent as TaskComponentEvent };
+

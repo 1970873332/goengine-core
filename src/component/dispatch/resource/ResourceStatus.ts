@@ -42,7 +42,7 @@ export default class ResourceStatusComponent<
  * 资源状态配置类
  */
 export abstract class ResourceStatusConfig extends ResourcePathConfig {
-    declare public JSON: IJSON;
+    public declare  JSON: IJSON;
 }
 
 interface IJSON extends ResourceComponentJSON {

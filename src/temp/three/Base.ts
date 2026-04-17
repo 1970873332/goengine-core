@@ -16,7 +16,7 @@ export default abstract class BaseThreeMap<
     /**
      * 相机
      */
-    declare public readonly camera: Camera;
+    public declare  readonly camera: Camera;
 
     /**
      * 渲染器

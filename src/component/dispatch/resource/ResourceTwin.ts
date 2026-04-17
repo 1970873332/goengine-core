@@ -45,15 +45,15 @@ export default class ResourceTwinComponent<
  * 双向资源配置类
  */
 export abstract class ResourceTwinConfig extends ResourcePathConfig {
-    declare public JSON: IJSON;
+    public declare  JSON: IJSON;
     /**
      * 前者
      */
-    declare public readonly former: string;
+    public declare  readonly former: string;
     /**
      * 后者
      */
-    declare public readonly latter: string;
+    public declare  readonly latter: string;
 }
 
 interface IJSON extends ResourceComponentJSON {

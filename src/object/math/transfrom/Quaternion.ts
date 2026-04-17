@@ -152,7 +152,7 @@ export default class Quaternion extends Vector<TQuaternion, Record<any, any>> {
         }
     }
     /**
-     * 根据矩阵设置Quaternion
+     * Matrix转为Quaternion
      * @param m
      * @param silend
      * @returns
@@ -196,6 +196,28 @@ export default class Quaternion extends Vector<TQuaternion, Record<any, any>> {
                 silend,
             );
         }
+    }
+    /**
+     * 乘法
+     * @param q 
+     * @returns 
+     */
+    public multiply(q: Quaternion): this {
+        const
+            {
+                x, y, z, w
+            } = this,
+            {
+                x: x1, y: y1, z: z1, w: w1
+            } = q;
+
+        return this.set(
+            w * x1 + x * w1 + y * z1 - z * y1,
+            w * y1 - x * z1 + y * w1 + z * x1,
+            w * z1 + x * y1 - y * x1 + z * w1,
+            w * w1 - x * x1 - y * y1 - z * z1
+        );
+
     }
     /**
      * 判断是否相等

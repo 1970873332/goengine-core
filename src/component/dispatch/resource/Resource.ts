@@ -38,7 +38,7 @@ export abstract class ResourcePathConfig {
     /**
      * 资源配置
      */
-    declare public JSON: IJSON;
+    public declare  JSON: IJSON;
     /**
      * 是否有默认文件夹
      */
@@ -46,7 +46,7 @@ export abstract class ResourcePathConfig {
     /**
      * 根路径
      */
-    declare public rootPath: string;
+    public declare  rootPath: string;
     /**
      * 服务器路径
      */

@@ -3,7 +3,7 @@ import CallBackComponent from "@core/component/CallBack";
 /**
  * 响应属性
  */
-export default class ResponseAttribute<T, E extends Record<any, any> = Record<any, any>> extends CallBackComponent<
+export default class ResponseAttribute<T, E extends Record<any, any>> extends CallBackComponent<
     Func.RecordCallBack<T>,
     E
 > {
@@ -39,8 +39,7 @@ export default class ResponseAttribute<T, E extends Record<any, any> = Record<an
     }
     public set value(v: T) {
         this.silentSetter(v);
-        !this.same && this.trigger();
-        this.ancient = v;
+        !this.same && this.trigger() && this.sync();
     }
     /**
      * 旧值
@@ -49,7 +48,7 @@ export default class ResponseAttribute<T, E extends Record<any, any> = Record<an
         return this.ancient_source;
     }
     protected set ancient(v: T) {
-        this.ancient_source = v as T;
+        this.ancient_source = v;
     }
 
     /**
@@ -67,11 +66,18 @@ export default class ResponseAttribute<T, E extends Record<any, any> = Record<an
     public silentSetter(v: T): this {
         this.value_source = (
             typeof this.formatter === "function" ? this.formatter(v) : v
-        ) as T;
+        );
+        return this;
+    }
+    /**
+     * 同步
+     */
+    public sync(): this {
+        this.ancient = this.value;
         return this;
     }
 
     protected execute(callback: Func.RecordCallBack<T>): void {
-        callback(this.ancient as T, this.value as T);
+        callback(this.ancient, this.value);
     }
 }

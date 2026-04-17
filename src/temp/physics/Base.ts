@@ -1,4 +1,4 @@
-import DuplicatableComponent from "@core/component/fussy/Duplicatable";
+import DuplicatableComponent, { DuplicatableSaveJSON } from "@core/component/fussy/Duplicatable";
 import ResponseAttribute from "@core/object/attribute/Response";
 
 /**
@@ -37,7 +37,7 @@ export default abstract class BasePhysicsNode<
     /**
      * 配置
      */
-    protected config = new ResponseAttribute<C | undefined>(
+    protected config = new ResponseAttribute<C | undefined, any>(
         void 0,
         this.formatConfig.bind(this),
     ).bindCallback(this.reBody.bind(this));
@@ -59,8 +59,7 @@ export default abstract class BasePhysicsNode<
 
     public toJSON(): ISaveJSON {
         return {
-            uuid: this.uuid,
-            type: this.constructor.name,
+            ...super.toJSON(),
             config: this.config.value ?? {},
         };
     }
@@ -70,15 +69,7 @@ interface IEvent { }
 
 interface IConfig { }
 
-interface ISaveJSON {
-    /**
-     * 唯一标识
-     */
-    uuid: string;
-    /**
-     * 类型
-     */
-    type: string;
+interface ISaveJSON extends DuplicatableSaveJSON {
     /**
      * 配置
      */

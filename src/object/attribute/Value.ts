@@ -1,18 +1,17 @@
 import CallBackComponent from "@core/component/CallBack";
-import { PolyUtils } from "@core/util/Poly";
 
 /**
  * 值
  */
 export default class Value<T, E extends Record<any, any>> extends CallBackComponent<
-    Func.CallBack<T>,
+    Func.CallBack<Value<T, E>>,
     E
 > {
     constructor(
         /**
          * 值
          */
-        private source: T,
+        private value_source: T,
         /**
          * 选项
          */
@@ -34,14 +33,17 @@ export default class Value<T, E extends Record<any, any>> extends CallBackCompon
     }
 
     public get value(): T {
-        return this.options?.get(this.source) ?? PolyUtils.func(this.source);
+        return this.options?.get ? this.options.get(this.value_source) : this.value_source;
     }
 
     protected set value(v: T) {
-        this.source = this.options?.set(v) ?? v;
+        if (this.options?.set) {
+            v = this.options.set(v);
+        }
+        this.value_source = v;
     }
 
-    protected execute(callback: (v: T) => void): void {
-        callback(this.value);
+    protected execute(callback: Func.CallBack<Value<T, E>>): void {
+        callback(this);
     }
 }

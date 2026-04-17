@@ -18,7 +18,7 @@ import {
  * 基础matter场景
  */
 export default class BaseMatterMap extends SceneComponent {
-    declare protected _render: Render;
+    protected declare  _render: Render;
 
     constructor() {
         super(DocumentUtils.simulationCanvas);

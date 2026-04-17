@@ -26,8 +26,11 @@ export default abstract class DuplicatableComponent<
      * 转换为JSON
      * @returns
      */
-    public toJSON(): Record<any, any> {
-        throw new Error("未实现toJSON");
+    public toJSON(): ISaveJSON {
+        return {
+            uuid: this.uuid,
+            type: this.constructor.name,
+        }
     }
     /**
      * 转换为字符串
@@ -36,3 +39,12 @@ export default abstract class DuplicatableComponent<
         throw new Error("未实现toString");
     }
 }
+
+interface ISaveJSON extends Partial<Pick<DuplicatableComponent<any, any>, "uuid">> {
+    /**
+     * 类型
+     */
+    type: string;
+}
+
+export { ISaveJSON as DuplicatableSaveJSON }

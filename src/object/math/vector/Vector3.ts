@@ -1,5 +1,5 @@
 import ResponseAttribute from "@core/object/attribute/Response";
-import { Euler, Vector2, Vector4 } from "../Index";
+import { Euler, Matrix4, Vector2, Vector4 } from "../Index";
 import { EulerOrder } from "../transfrom/Euler";
 import Vector from "../Vector";
 
@@ -123,6 +123,28 @@ export default class Vector3 extends Vector<TVector3, Record<any, any>> {
      */
     public set(x: number, y: number, z: number, silend?: boolean): this {
         return this.unifySetter(silend, x, y, z);
+    }
+    /**
+     * Matrix转为Vector3
+     * @param m 
+     * @param type 
+     * @returns 
+     */
+    public fromMatrix(m: Matrix4, type: "position" | "scale"): this {
+        const {
+            x1, x2, x3,
+            y1, y2, y3,
+            z1, z2, z3,
+            w1, w2, w3
+        } = m;
+        switch (type) {
+            case "position":
+                return this.set(w1, w2, w3);
+            case "scale":
+                return this.set(Math.sqrt(x1 ** 2 + y1 ** 2 + z1 ** 2), Math.sqrt(x2 ** 2 + y2 ** 2 + z2 ** 2), Math.sqrt(x3 ** 2 + y3 ** 2 + z3 ** 2));
+            default:
+                return this;
+        }
     }
     /**
      * 相加

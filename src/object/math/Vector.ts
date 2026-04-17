@@ -1,6 +1,7 @@
 import DuplicatableComponent from "@core/component/fussy/Duplicatable";
 import { PolyUtils } from "@core/util/Poly";
 import ResponseAttribute from "../attribute/Response";
+import { Vector2 } from "./Index";
 
 /**
  * 向量
@@ -109,7 +110,7 @@ export default abstract class Vector<
      * @param v
      */
     protected reckSilendSetter<T>(
-        target: ResponseAttribute<T>,
+        target: ResponseAttribute<T, any>,
         v?: Poly.resolveFunc<T>,
     ): void {
         v && target.silentSetter(PolyUtils.func(v));
@@ -130,6 +131,10 @@ export default abstract class Vector<
 
     protected execute(callback: Func.CallBack<Vector<T, E>>): void {
         callback(this);
+    }
+
+    public clone(): this {
+        return new (this.constructor as any)().copy(this);
     }
 
     public copy(target: this, silend?: boolean): this {

@@ -22,7 +22,7 @@ export default class SceneComponent<
      * 尺寸监听
      */
     protected readonly obsever: ResizeObserver = new ResizeObserver(
-        this.resize.bind(this),
+        this.resize.bind(this)
     );
     /**
      * 性能统计
@@ -33,13 +33,13 @@ export default class SceneComponent<
      * 画布宽度
      */
     public get width(): number {
-        return this.element.width;
+        return this.element.clientWidth;
     }
     /**
      * 画布高度
      */
     public get height(): number {
-        return this.element.height;
+        return this.element.clientHeight;
     }
     /**
      * 画布宽高比
@@ -82,7 +82,6 @@ export default class SceneComponent<
      */
     protected addEvents(): void {
         this.obsever.observe(this.element);
-        // window.addEventListener("resize", this.resize.bind(this));
     }
 
     protected update(time: DOMHighResTimeStamp): void {

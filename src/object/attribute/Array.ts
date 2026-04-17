@@ -36,6 +36,10 @@ export default class ArrayAttribute<
         this.size = target.size;
         return this;
     }
+
+    protected execute(callback: Func.CallBack<ArrayAttribute<T>>): void {
+        callback(this);
+    }
 }
 
 type TSource =

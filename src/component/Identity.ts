@@ -16,7 +16,7 @@ export default class IdentityComponent<
     /**
      * id
      */
-    declare public id: string;
+    public declare id: string;
     /**
      * 原始字符
      */

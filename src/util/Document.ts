@@ -128,10 +128,10 @@ export abstract class DocumentUtils {
                     oncontextmenu: () => false,
                 }),
                 {
-                    target: this.canvasWrap,
                     zIndex: 0,
+                    target: this.canvasWrap,
                     callback: CanvasUtils.syncCanvasSize,
-                    style: { backgroundColor: "rgba(0, 0, 0, 1)" },
+                    style: { width: "100%", height: "100%" },
                 },
             )
         );
@@ -166,12 +166,13 @@ export abstract class DocumentUtils {
             this.setToElement(
                 this.createElement("canvas", {
                     id: EIDMap.INSTRUCT_CANVAS,
-                    className: "pointer-events-none full-all absolute-full",
+                    className: "pointer-events-none  absolute-full",
                 }),
                 {
                     zIndex: 2,
                     target: this.canvasWrap,
                     callback: CanvasUtils.syncCanvasSize,
+                    style: { width: "100%", height: "100%" }
                 },
             )
         );
