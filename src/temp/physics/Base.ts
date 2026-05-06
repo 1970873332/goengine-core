@@ -1,11 +1,11 @@
 import DuplicatableComponent, { DuplicatableSaveJSON } from "@core/component/fussy/Duplicatable";
-import ResponseAttribute from "@core/object/attribute/Response";
+import Value from "@core/object/attribute/Value";
 
 /**
  * 基础物理节点
  */
 export default abstract class BasePhysicsNode<
-    T extends Record<any, any>,
+    T extends {},
     C extends IConfig,
     E extends IEvent,
 > extends DuplicatableComponent<Func.CallBack<BasePhysicsNode<T, C, E>>, E> {
@@ -37,9 +37,13 @@ export default abstract class BasePhysicsNode<
     /**
      * 配置
      */
-    protected config = new ResponseAttribute<C | undefined, any>(
+    protected config = new Value<C | undefined>(
         void 0,
-        this.formatConfig.bind(this),
+        {
+            set: (nv) => {
+                return this.formatConfig(nv);
+            }
+        }
     ).bindCallback(this.reBody.bind(this));
 
     /**

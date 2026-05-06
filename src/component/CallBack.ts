@@ -5,7 +5,7 @@ import { EventTarget } from "../supplement/Event";
  */
 export default class CallBackComponent<
     T extends Function,
-    E extends Record<any, any>,
+    E extends {},
 > extends EventTarget<E> {
     /**
      * 回调

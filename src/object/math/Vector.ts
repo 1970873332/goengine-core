@@ -1,15 +1,15 @@
 import DuplicatableComponent from "@core/component/fussy/Duplicatable";
 import { PolyUtils } from "@core/util/Poly";
-import ResponseAttribute from "../attribute/Response";
-import { Vector2 } from "./Index";
+import Value from "../attribute/Value";
 
 /**
  * 向量
  */
 export default abstract class Vector<
     T extends any[],
-    E extends Record<any, any>
-> extends DuplicatableComponent<Func.CallBack<Vector<T, E>>, E> {
+    E extends {},
+    B
+> extends DuplicatableComponent<Func.CallBack<B>, E> {
     /**
      * 是否是向量
      */
@@ -21,27 +21,31 @@ export default abstract class Vector<
         this.reckSilendSetter(this.ry, y);
     }
 
-    public readonly rx = new ResponseAttribute(
+    public readonly rx = new Value<number>(
         0,
-        this.safety.bind(this),
+        {
+            set: (nv) => this.safety(nv)
+        }
     ).bindCallback(this.trigger.bind(this));
 
-    public readonly ry = new ResponseAttribute(
+    public readonly ry = new Value<number>(
         0,
-        this.safety.bind(this),
+        {
+            set: (nv) => this.safety(nv)
+        }
     ).bindCallback(this.trigger.bind(this));
 
     public get x(): number {
         return this.rx.value;
     }
     public set x(v: number) {
-        this.rx.setter(v);
+        this.rx.value = v;
     }
     public get y(): number {
         return this.ry.value;
     }
     public set y(v: number) {
-        this.ry.setter(v);
+        this.ry.value = v;
     }
 
     public get v1(): number {
@@ -65,11 +69,27 @@ export default abstract class Vector<
     }
 
     /**
+     * 设置X
+     * @param v 
+     * @returns 
+     */
+    public setX(v: number): void {
+        this.x = v;
+    }
+    /**
+     * 设置Y
+     * @param v 
+     * @returns 
+     */
+    public setY(v: number): void {
+        this.y = v;
+    }
+    /**
      * 安全值
      * @param v
      * @returns
      */
-    public safety(v: number): number {
+    protected safety(v: number): number {
         return Math.abs(v) === Infinity ? 0 : v;
     }
     /**
@@ -91,8 +111,8 @@ export default abstract class Vector<
      */
     protected unifySilendSetter(...array: unknown[]): this {
         const [v1, v2] = array;
-        typeof v1 === "number" && this.rx.silentSetter(v1);
-        typeof v2 === "number" && this.ry.silentSetter(v2);
+        typeof v1 === "number" && this.rx.setter(v1);
+        typeof v2 === "number" && this.ry.setter(v2);
         return this;
     }
     /**
@@ -110,10 +130,11 @@ export default abstract class Vector<
      * @param v
      */
     protected reckSilendSetter<T>(
-        target: ResponseAttribute<T, any>,
+        target: Value<T>,
         v?: Poly.resolveFunc<T>,
-    ): void {
-        v && target.silentSetter(PolyUtils.func(v));
+    ): this {
+        v && target.setter(PolyUtils.func(v));
+        return this;
     }
     /**
      * 转为数组
@@ -122,15 +143,9 @@ export default abstract class Vector<
     public toArray(): T {
         throw new Error("未实现toArray");
     }
-    /**
-     * 重置为单位向量
-     */
-    public identity(): this {
-        throw new Error("未实现identity");
-    }
 
-    protected execute(callback: Func.CallBack<Vector<T, E>>): void {
-        callback(this);
+    protected execute(callback: Func.CallBack<B>): void {
+        callback(this as unknown as B);
     }
 
     public clone(): this {

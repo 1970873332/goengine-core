@@ -1,4 +1,4 @@
-import ResponseAttribute from "@core/object/attribute/Response";
+import Value from "@core/object/attribute/Value";
 import { MathUtils } from "@core/util/Math";
 import { Matrix4, Quaternion, Vector2, Vector3 } from "../Index";
 import Vector from "../Vector";
@@ -6,7 +6,7 @@ import Vector from "../Vector";
 /**
  * 欧拉角
  */
-export default class Euler extends Vector<TEuler, Record<any, any>> {
+export default class Euler extends Vector<TEuler, {}, Euler> {
     /**
      * 是否是欧拉角
      */
@@ -29,6 +29,14 @@ export default class Euler extends Vector<TEuler, Record<any, any>> {
     public static fromArrays(arr?: Partial<TEuler>[]): Euler[] {
         return arr?.map((v) => Euler.fromArray(v)) ?? [];
     }
+    /**
+     * 创建一个零欧拉角
+     * @param order 
+     * @returns 
+     */
+    public static zero(order?: Poly.resolveFunc<TOrder>): Euler {
+        return new Euler(void 0, void 0, void 0, order);
+    }
 
     constructor(
         x?: Poly.resolveFunc<number>,
@@ -41,11 +49,14 @@ export default class Euler extends Vector<TEuler, Record<any, any>> {
         this.reckSilendSetter(this.rorder, order);
     }
 
-    public readonly rz = new ResponseAttribute(
+    public readonly rz = new Value<number>(
         0,
+        {
+            set: (nv) => this.safety(nv)
+        }
     ).bindCallback(this.trigger.bind(this));
 
-    public readonly rorder = new ResponseAttribute<TOrder, any>(
+    public readonly rorder = new Value<TOrder>(
         "XYZ",
     ).bindCallback(this.trigger.bind(this));
 
@@ -53,13 +64,13 @@ export default class Euler extends Vector<TEuler, Record<any, any>> {
         return this.rz.value;
     }
     public set z(v: number) {
-        this.rz.setter(v);
+        this.rz.value = v;
     }
     public get order(): TOrder {
         return this.rorder.value;
     }
     public set order(v: TOrder) {
-        this.rorder.setter(v);
+        this.rorder.value = v;
     }
 
     public get v3(): number {
@@ -100,71 +111,72 @@ export default class Euler extends Vector<TEuler, Record<any, any>> {
         order: TOrder = this.order,
         silend?: boolean,
     ): this {
-        const v: Vector2 = new Vector2();
+        const v: Vector2 = Vector2.zero(),
+            { x1, x2, x3, y1, y2, y3, z1, z2, z3 } = m;
         switch (order) {
             case "XYZ":
-                Math.abs(m.z1) < 0.9999999
-                    ? v.set(Math.atan2(-m.z2, m.z3), Math.atan2(-m.y1, m.x1))
-                    : v.set(Math.atan2(m.y3, m.y2), 0);
+                Math.abs(z2) < 0.9999999
+                    ? v.set(Math.atan2(-z3, z2), Math.atan2(-y1, x1))
+                    : v.set(Math.atan2(z1, y1), 0);
                 return this.set(
                     v.v1,
-                    Math.asin(MathUtils.clamp(m.z1, -1, 1)),
+                    Math.asin(MathUtils.clamp(z2, -1, 1)),
                     v.v2,
                     order,
                     silend,
                 );
             case "YXZ":
-                Math.abs(m.y3) < 0.9999999
-                    ? v.set(Math.atan2(m.x3, m.z3), Math.atan2(m.y1, m.y1))
-                    : v.set(Math.atan2(-m.z1, m.x1), 0);
+                Math.abs(y3) < 0.9999999
+                    ? v.set(Math.atan2(x3, z3), Math.atan2(y2, y1))
+                    : v.set(Math.atan2(-x1, z1), 0);
                 return this.set(
-                    Math.asin(-MathUtils.clamp(m.y3, -1, 1)),
+                    Math.asin(-MathUtils.clamp(y3, -1, 1)),
                     v.v1,
                     v.v2,
                     order,
                     silend,
                 );
             case "ZXY":
-                Math.abs(m.z2) < 0.9999999
-                    ? v.set(Math.atan2(-m.z1, m.z3), Math.atan2(-m.x2, m.y2))
-                    : v.set(0, Math.atan2(m.y1, m.x1));
+                Math.abs(x2) < 0.9999999
+                    ? v.set(Math.atan2(-x3, x1), Math.atan2(-y2, z2))
+                    : v.set(0, Math.atan2(y3, y1));
                 return this.set(
-                    Math.asin(MathUtils.clamp(m.z2, -1, 1)),
+                    Math.asin(MathUtils.clamp(x2, -1, 1)),
                     v.v1,
                     v.v2,
                     order,
                     silend,
                 );
             case "ZYX":
-                Math.abs(m.z1) < 0.9999999
-                    ? v.set(Math.atan2(m.z2, m.z3), Math.atan2(m.y1, m.x1))
-                    : v.set(0, Math.atan2(-m.x1, m.y2));
+                Math.abs(z1) < 0.9999999
+                    ? v.set(Math.atan2(z3, z2), Math.atan2(x1, y1))
+                    : v.set(0, Math.atan2(-x1, y2));
                 return this.set(
                     v.v1,
-                    Math.asin(-MathUtils.clamp(m.z1, -1, 1)),
+                    Math.asin(-MathUtils.clamp(z1, -1, 1)),
                     v.v2,
                     order,
                     silend,
                 );
             case "YZX":
-                Math.abs(m.y1) < 0.9999999
-                    ? v.set(Math.atan2(-m.y3, m.y2), Math.atan2(-m.z1, m.x1))
-                    : v.set(0, Math.atan2(m.x3, m.z2));
+                Math.abs(y2) < 0.9999999
+                    ? v.set(Math.atan2(-y1, y3), Math.atan2(-x2, z2))
+                    : v.set(0, Math.atan2(z3, z1));
                 return this.set(
                     v.v1,
                     v.v2,
-                    Math.asin(MathUtils.clamp(m.y1, -1, 1)),
+                    Math.asin(MathUtils.clamp(y2, -1, 1)),
                     order,
                     silend,
                 );
             case "XZY":
-                Math.abs(m.x2) < 0.9999999
-                    ? v.set(Math.atan2(m.z2, m.y2), Math.atan2(m.x3, m.x1))
-                    : v.set(Math.atan2(-m.y3, m.z3), 0);
+                Math.abs(x1) < 0.9999999
+                    ? v.set(Math.atan2(y3, z3), Math.atan2(x3, x1))
+                    : v.set(Math.atan2(-y3, z3), 0);
                 return this.set(
                     v.v1,
                     v.v2,
-                    Math.asin(-MathUtils.clamp(m.x2, -1, 1)),
+                    Math.asin(-MathUtils.clamp(x1, -1, 1)),
                     order,
                     silend,
                 );
@@ -184,7 +196,7 @@ export default class Euler extends Vector<TEuler, Record<any, any>> {
         order: TOrder = this.order,
         silend?: boolean,
     ): this {
-        return this.fromMatrix(new Matrix4().applyQuaternion(q), order, silend);
+        return this.fromMatrix(new Matrix4().quaternion(q), order, silend);
     }
     /**
      * Vector3转为Euler
@@ -213,20 +225,24 @@ export default class Euler extends Vector<TEuler, Record<any, any>> {
             this.order === euler.order
         );
     }
+    /**
+     * 设置为零欧拉角
+     * @param order 
+     * @returns 
+     */
+    public zero(order?: TOrder): this {
+        return this.set(0, 0, 0, order);
+    }
 
     protected unifySilendSetter(...array: unknown[]): this {
         const [x, y, z, o] = array;
-        typeof z === "number" && this.rz.silentSetter(z);
-        typeof o === "string" && this.rorder.silentSetter(o as TOrder);
+        typeof z === "number" && this.rz.setter(z);
+        typeof o === "string" && this.rorder.setter(o as TOrder);
         return super.unifySilendSetter(x, y);
     }
 
     public toArray(): TEuler {
         return [this.x, this.y, this.z, this.order];
-    }
-
-    public identity(): this {
-        return this.set(0, 0, 0);
     }
 }
 

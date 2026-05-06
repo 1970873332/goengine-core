@@ -7,7 +7,7 @@ export default class ArrayAttribute<
     T extends TSource,
 > extends DuplicatableComponent<
     Func.CallBack<ArrayAttribute<T>>,
-    Record<any, any>
+    {}
 > {
     /**
      * @param array 数组

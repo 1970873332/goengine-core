@@ -5,7 +5,7 @@ import DuplicatableComponent from "@core/component/fussy/Duplicatable";
  */
 export default abstract class Matrix<
     T extends number[],
-    E extends Record<any, any>,
+    E extends {},
 > extends DuplicatableComponent<Func.CallBack<Matrix<T, E>>, E> {
     /**
      * 是否是矩阵

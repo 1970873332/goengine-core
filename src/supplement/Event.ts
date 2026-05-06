@@ -1,24 +1,27 @@
 /**
  * 事件目标
  */
-export class EventTarget<E extends Record<any, any>>
-    extends globalThis.EventTarget
-{
+export class EventTarget<E extends {}>
+    extends globalThis.EventTarget {
     /**
      * 唯一标识
      */
     public uuid: string = crypto.randomUUID
         ? crypto.randomUUID()
         : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-              const r = (Math.random() * 16) | 0;
-              const v = c === "x" ? r : (r & 0x3) | 0x8;
-              return v.toString(16);
-          });
+            const r = (Math.random() * 16) | 0;
+            const v = c === "x" ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+        });
+    /**
+     * 用户数据
+     */
+    public userData: any = {};
 
     /**
      * 重新初始化
      */
-    public reInit(): void {}
+    protected reInit(): void { }
     /**
      * 添加自定义事件
      * @param type
@@ -66,12 +69,12 @@ export class EventTarget<E extends Record<any, any>>
 /**
  * 事件状态
  */
-export class EventState<T extends Record<any, any>> {
+export class EventState<T extends {}> {
     constructor(
         protected target: TTarget<T>,
         protected type: keyof T & string,
         protected callback: (event: any) => void,
-    ) {}
+    ) { }
 
     /**
      * 休息
@@ -94,7 +97,7 @@ export class EventState<T extends Record<any, any>> {
     }
 }
 
-type TTarget<T extends Record<any, any>> =
+type TTarget<T extends {}> =
     | EventTarget<T>
     | EEventTarget
     | undefined

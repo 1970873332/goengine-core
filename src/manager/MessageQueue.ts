@@ -89,7 +89,7 @@ interface IData {
     messages: TMessage[];
 }
 
-type TMessage = string | Record<any, any>;
+type TMessage = string | Record<string, unknown>;
 
 export {
     IData as MessageQueueManagerData,

@@ -30,4 +30,14 @@ export abstract class MathUtils {
     public static rn(max: number, min: number = 0): number {
         return Math.round(Math.random() * (max - min) + min);
     }
+    /**
+     * 边界
+     * @param value 
+     * @param min 
+     * @param max 
+     * @returns 
+     */
+    public static boundary(value: number, min: number, max: number): number {
+        return Math.max(Math.min(value, max), min);
+    }
 }

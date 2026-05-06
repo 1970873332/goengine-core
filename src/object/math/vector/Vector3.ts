@@ -1,4 +1,4 @@
-import ResponseAttribute from "@core/object/attribute/Response";
+import Value from "@core/object/attribute/Value";
 import { Euler, Matrix4, Vector2, Vector4 } from "../Index";
 import { EulerOrder } from "../transfrom/Euler";
 import Vector from "../Vector";
@@ -6,7 +6,7 @@ import Vector from "../Vector";
 /**
  * 三维向量
  */
-export default class Vector3 extends Vector<TVector3, Record<any, any>> {
+export default class Vector3 extends Vector<TVector3, {}, Vector3> {
     /**
      * 是否是三维向量
      */
@@ -29,6 +29,20 @@ export default class Vector3 extends Vector<TVector3, Record<any, any>> {
     public static fromArrays(arr?: Partial<TVector3>[]): Vector3[] {
         return arr?.map((v) => Vector3.fromArray(v)) ?? [];
     }
+    /**
+     * 创建一个零向量
+     * @returns 
+     */
+    public static zero(): Vector3 {
+        return new Vector3();
+    }
+    /**
+     * 创建一个单位向量
+     * @returns 
+     */
+    public static one(): Vector3 {
+        return new Vector3(1, 1, 1);
+    }
 
     constructor(
         x?: Poly.resolveFunc<number>,
@@ -39,16 +53,18 @@ export default class Vector3 extends Vector<TVector3, Record<any, any>> {
         this.reckSilendSetter(this.rz, z);
     }
 
-    public readonly rz = new ResponseAttribute(
+    public readonly rz = new Value<number>(
         0,
-        this.safety.bind(this),
+        {
+            set: (nv) => this.safety(nv)
+        }
     ).bindCallback(this.trigger.bind(this));
 
     public get z(): number {
         return this.rz.value;
     }
     public set z(v: number) {
-        this.rz.setter(v);
+        this.rz.value = v;
     }
 
     public get v3(): number {
@@ -114,6 +130,14 @@ export default class Vector3 extends Vector<TVector3, Record<any, any>> {
     }
 
     /**
+     * 设置Z
+     * @param v 
+     * @returns 
+     */
+    public setZ(v: number): void {
+        this.z = v;
+    }
+    /**
      * 设置
      * @param x
      * @param y
@@ -126,22 +150,26 @@ export default class Vector3 extends Vector<TVector3, Record<any, any>> {
     }
     /**
      * Matrix转为Vector3
-     * @param m 
-     * @param type 
-     * @returns 
+     * @param m
+     * @param type
+     * @returns
      */
     public fromMatrix(m: Matrix4, type: "position" | "scale"): this {
         const {
-            x1, x2, x3,
-            y1, y2, y3,
-            z1, z2, z3,
+            x1, x2, x3, x4,
+            y1, y2, y3, y4,
+            z1, z2, z3, z4,
             w1, w2, w3
         } = m;
         switch (type) {
             case "position":
-                return this.set(w1, w2, w3);
+                return this.set(x4, y4, z4);
             case "scale":
-                return this.set(Math.sqrt(x1 ** 2 + y1 ** 2 + z1 ** 2), Math.sqrt(x2 ** 2 + y2 ** 2 + z2 ** 2), Math.sqrt(x3 ** 2 + y3 ** 2 + z3 ** 2));
+                return this.set(
+                    Math.sqrt(x1 ** 2 + y1 ** 2 + z1 ** 2 + w1 ** 2),
+                    Math.sqrt(x2 ** 2 + y2 ** 2 + z2 ** 2 + w2 ** 2),
+                    Math.sqrt(x3 ** 2 + y3 ** 2 + z3 ** 2 + w3 ** 2)
+                );
             default:
                 return this;
         }
@@ -342,19 +370,48 @@ export default class Vector3 extends Vector<TVector3, Record<any, any>> {
     public toEuler(order?: EulerOrder): Euler {
         return new Euler(this.x, this.y, this.z, order);
     }
+    /**
+     * 应用矩阵变换
+     * @param m
+     * @returns
+     */
+    public applyMatrix4(m: Matrix4): this {
+        const { x, y, z } = this,
+            {
+                x1, x2, x3, x4,
+                y1, y2, y3, y4,
+                z1, z2, z3, z4,
+            } = m;
+
+        return this.set(
+            x * x1 + y * x2 + z * x3 + x4,
+            x * y1 + y * y2 + z * y3 + y4,
+            x * z1 + y * z2 + z * z3 + z4
+        );
+    }
+    /**
+     * 设置为零向量
+     * @returns 
+     */
+    public zero(): this {
+        return this.set(0, 0, 0);
+    }
+    /**
+     * 设置为单位向量
+     * @returns 
+     */
+    public one(): this {
+        return this.set(1, 1, 1);
+    }
 
     protected unifySilendSetter(...array: unknown[]): this {
         const [x, y, z] = array;
-        typeof z === "number" && this.rz.silentSetter(z);
+        typeof z === "number" && this.rz.setter(z);
         return super.unifySilendSetter(x, y);
     }
 
     public toArray(): TVector3 {
         return [this.x, this.y, this.z];
-    }
-
-    public identity(): this {
-        return this.set(0, 0, 0);
     }
 }
 

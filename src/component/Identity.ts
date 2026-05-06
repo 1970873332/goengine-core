@@ -5,7 +5,7 @@ import { EventTarget } from "../supplement/Event";
  * 状态组件
  */
 export default class IdentityComponent<
-    E extends Record<any, any> = Record<any, any>,
+    E extends {},
 > extends EventTarget<E> {
     constructor(char?: string, unverifiedID?: string) {
         super();

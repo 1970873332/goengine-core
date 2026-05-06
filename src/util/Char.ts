@@ -1,4 +1,4 @@
-import { Vector2, Vector3, Vector4 } from "../object/math/Index";
+import { Vector2, Vector4 } from "../object/math/Index";
 import { MathUtils } from "./Math";
 /**
  * 字符工具类
@@ -26,12 +26,13 @@ export abstract class CharUtils {
      * @returns
      */
     public static hexToRGBA(hex?: number, alpha: number = 255): Vector4 {
-        if (typeof hex !== "number") return new Vector4();
-        return new Vector3(
+        if (typeof hex !== "number") return Vector4.zero();
+        return new Vector4(
             (hex >> 16) & 0xff,
             (hex >> 8) & 0xff,
             hex & 0xff,
-        ).toVector4(MathUtils.clamp(Math.floor(alpha), 0, 255));
+            MathUtils.clamp(Math.floor(alpha), 0, 255)
+        );
     }
     /**
      * rgba转16进制

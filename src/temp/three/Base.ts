@@ -16,7 +16,7 @@ export default abstract class BaseThreeMap<
     /**
      * 相机
      */
-    public declare  readonly camera: Camera;
+    public declare readonly camera: Camera;
 
     /**
      * 渲染器
@@ -66,7 +66,6 @@ export default abstract class BaseThreeMap<
 
     /**
      * 渲染
-     * @Super
      */
     protected render(): void {
         this.webglRenderer.render(this.scene, this.camera);

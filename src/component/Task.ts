@@ -4,7 +4,7 @@ import { EventTarget } from "../supplement/Event";
  * 任务组件
  */
 export default abstract class TaskComponent<
-    E extends IEvent = IEvent,
+    E extends IEvent,
 > extends EventTarget<E> {
     /**
      * nextTick
@@ -29,10 +29,13 @@ export default abstract class TaskComponent<
         yield this.main();
         yield this.init();
         yield this.addEvents();
-        yield (async () => {
-            await this.applyScript();
-            this.ready();
-        })();
+        yield new Promise(resolve => {
+            setTimeout(async () => {
+                await this.applyScript();
+                this.ready();
+                resolve(void 0);
+            }, 0);
+        });
     }
     /**
      * 实施
@@ -69,14 +72,12 @@ export default abstract class TaskComponent<
     /**
      * 更新
      * @param delta
-     * @Super
      */
     protected update(time: DOMHighResTimeStamp): void {
         this.animationID = requestAnimationFrame(this.update.bind(this));
     }
     /**
      * 销毁
-     * @Super
      */
     public destroy(): void {
         this.animationID && cancelAnimationFrame(this.animationID);

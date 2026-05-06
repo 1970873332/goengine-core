@@ -5,7 +5,7 @@ import CallBackComponent from "../CallBack";
  */
 export default abstract class DuplicatableComponent<
     T extends Function,
-    E extends Record<any, any>,
+    E extends {},
 > extends CallBackComponent<T, E> {
     /**
      * 克隆

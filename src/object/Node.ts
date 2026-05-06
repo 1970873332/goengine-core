@@ -1,11 +1,11 @@
 import DuplicatableComponent, { DuplicatableSaveJSON } from "@core/component/fussy/Duplicatable";
 import { TaskComponentEvent } from "@core/component/Task";
 import MessageQueueManager, { MessageQueueManagerEvent } from "@core/manager/MessageQueue";
-import ResponseAttribute from "@core/object/attribute/Response";
 import { Matrix4, Quaternion, Vector3 } from "@core/object/math/Index";
 import Euler, { EulerType } from "@core/object/math/transfrom/Euler";
 import { Vector3Type } from "@core/object/math/vector/Vector3";
 import { ArrayUtils } from "@core/util/Array";
+import Value from "./attribute/Value";
 
 /**
  * 基础节点
@@ -36,7 +36,7 @@ export default abstract class BaseNode<
     /**
      * 受控
      */
-    public controlled: boolean = false;
+    public controlled: boolean = true;
     /**
      * 是否禁用辅助
      */
@@ -48,37 +48,37 @@ export default abstract class BaseNode<
     /**
      * 是否可见
      */
-    public readonly visible = new ResponseAttribute(
+    public readonly visible = new Value<boolean>(
         true,
     ).bindCallback(this.visibleCallback.bind(this));
     /**
      * 锚点
      */
-    public readonly anchor = new Vector3().bindCallback(
+    public readonly anchor = Vector3.zero().bindCallback(
         this.anchorCallback.bind(this),
     );
     /**
      * 缩放
      */
-    public readonly scale = new Vector3(1, 1, 1).bindCallback(
+    public readonly scale = Vector3.one().bindCallback(
         this.scaleCallback.bind(this),
     );
     /**
      * 位置
      */
-    public readonly position = new Vector3().bindCallback(
+    public readonly position = Vector3.zero().bindCallback(
         this.positionCallback.bind(this),
     );
     /**
      * 旋转
      */
-    public readonly rotation = new Euler().bindCallback(
+    public readonly rotation = Euler.zero().bindCallback(
         this.rotationCallback.bind(this),
     );
     /**
      * 四元数
      */
-    public readonly quaternion = new Quaternion().bindCallback(
+    public readonly quaternion = Quaternion.identity().bindCallback(
         this.quaternionCallback.bind(this),
     );
     /**
@@ -92,19 +92,19 @@ export default abstract class BaseNode<
     /**
      * 世界缩放
      */
-    public readonly worldScale = new Vector3(1, 1, 1);
+    public readonly worldScale = Vector3.one();
     /**
      * 世界位置
      */
-    public readonly worldPosition = new Vector3();
+    public readonly worldPosition = Vector3.zero();
     /**
      * 世界旋转
      */
-    public readonly worldRotation = new Euler();
+    public readonly worldRotation = Euler.zero();
     /**
      * 世界四元数
      */
-    public readonly worldQuaternion = new Quaternion();
+    public readonly worldQuaternion = Quaternion.identity();
 
     /**
      * 更新矩阵
@@ -112,7 +112,7 @@ export default abstract class BaseNode<
      */
     public updateMatrix(): void {
         this.matrix.copy(
-            Matrix4.compose(this.position, this.quaternion, this.scale),
+            Matrix4.compose(this.position, this.quaternion, this.scale)
         );
         this.updateWorldMatrix();
     }
@@ -120,8 +120,9 @@ export default abstract class BaseNode<
      * 更新世界矩阵
      */
     public updateWorldMatrix(): void {
-        this.worldMatrix.copy(this.matrix);
-        this.parent && this.worldMatrix.multiply(this.parent.worldMatrix);
+        if (this.parent) {
+            this.worldMatrix.copy(this.parent.worldMatrix).multiply(this.matrix);
+        } else this.worldMatrix.copy(this.matrix);
 
         this.worldScale.fromMatrix(this.worldMatrix, "scale");
         this.worldPosition.fromMatrix(this.worldMatrix, "position");
@@ -130,7 +131,6 @@ export default abstract class BaseNode<
 
         this.children.forEach((child) => child.updateWorldMatrix());
     }
-
     /**
      * 设置配置
      * @param config
@@ -148,16 +148,19 @@ export default abstract class BaseNode<
 
             visible,
         } = config;
-        scale && this.scale.copy(scale);
-        anchor && this.anchor.copy(anchor);
-        position && this.position.copy(position);
-        rotation && this.rotation.copy(rotation);
+        scale && this.scale.copy(scale, true);
+        anchor && this.anchor.copy(anchor, true);
+        position && this.position.copy(position, true);
+        rotation && this.rotation.copy(rotation, true);
 
         this.instruct = instruct ?? this.instruct;
         this.controlled = controlled ?? this.controlled;
         this.disableHelper = disableHelper ?? this.disableHelper;
 
-        typeof visible === "boolean" && this.visible.setter(visible);
+        this.visible.setter(visible ?? this.visible.value);
+
+        this.quaternion.fromEuler(this.rotation, true);
+        this.updateMatrix();
     }
     /**
      * 绑定父节点
@@ -232,6 +235,7 @@ export default abstract class BaseNode<
      */
     protected anchorCallback(): void {
         this.addMessageQueue({ anchor: this.anchor.toArray() });
+        this.updateMatrix();
     }
     /**
      * 可见回调
@@ -320,6 +324,10 @@ export default abstract class BaseNode<
     public destroy(): void {
         this.clear(true);
         this.parent?.remove(this as unknown as T);
+    }
+
+    protected execute(callback: Func.CallBack<BaseNode<C, E, T>, void>): void {
+        callback(this);
     }
 
     public toJSON(): ISaveJSON {

@@ -4,7 +4,7 @@ import Matrix from "../Matrix";
 /**
  * 2x2矩阵
  */
-export default class Matrix2 extends Matrix<TMatrix2, Record<any, any>> {
+export default class Matrix2 extends Matrix<TMatrix2, {}> {
     /**
      * 是否是2x2矩阵
      */
@@ -67,12 +67,18 @@ export default class Matrix2 extends Matrix<TMatrix2, Record<any, any>> {
      * @returns
      */
     public multiply(m: Matrix2): this {
-        return this.set([
-            this.x1 * m.x1 + this.x2 * m.y1,
-            this.x1 * m.x2 + this.x2 * m.y2,
+        const a11 = this.x1, a12 = this.x2;
+        const a21 = this.y1, a22 = this.y2;
 
-            this.y1 * m.x1 + this.y2 * m.y1,
-            this.y1 * m.x2 + this.y2 * m.y2,
+        const b11 = m.x1, b12 = m.x2;
+        const b21 = m.y1, b22 = m.y2;
+
+        return this.set([
+            a11 * b11 + a12 * b21,
+            a21 * b11 + a22 * b21,
+
+            a11 * b12 + a12 * b22,
+            a21 * b12 + a22 * b22,
         ]);
     }
     /**

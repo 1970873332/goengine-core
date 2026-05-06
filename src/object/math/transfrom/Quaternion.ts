@@ -1,11 +1,11 @@
-import ResponseAttribute from "@core/object/attribute/Response";
+import Value from "@core/object/attribute/Value";
 import { Euler, Matrix4 } from "../Index";
 import Vector from "../Vector";
 
 /**
  * 四元数
  */
-export default class Quaternion extends Vector<TQuaternion, Record<any, any>> {
+export default class Quaternion extends Vector<TQuaternion, {}, Quaternion> {
     /**
      * 是否是四元数
      */
@@ -28,6 +28,13 @@ export default class Quaternion extends Vector<TQuaternion, Record<any, any>> {
     public static fromArrays(arr?: Partial<TQuaternion>[]): Quaternion[] {
         return arr?.map((v) => Quaternion.fromArray(v)) ?? [];
     }
+    /**
+     * 创建一个单位四元数
+     * @returns 
+     */
+    public static identity(): Quaternion {
+        return new Quaternion(0, 0, 0, 1);
+    }
 
     constructor(
         x?: Poly.resolveFunc<number>,
@@ -40,25 +47,31 @@ export default class Quaternion extends Vector<TQuaternion, Record<any, any>> {
         this.reckSilendSetter(this.rw, w);
     }
 
-    public readonly rz = new ResponseAttribute(
+    public readonly rz = new Value<number>(
         0,
+        {
+            set: (nv) => this.safety(nv)
+        }
     ).bindCallback(this.trigger.bind(this));
 
-    public readonly rw = new ResponseAttribute(
+    public readonly rw = new Value<number>(
         1,
+        {
+            set: (nv) => this.safety(nv)
+        }
     ).bindCallback(this.trigger.bind(this));
 
     public get z(): number {
         return this.rz.value;
     }
     public set z(v: number) {
-        this.rz.setter(v);
+        this.rz.value = v;
     }
     public get w(): number {
         return this.rw.value;
     }
     public set w(v: number) {
-        this.rw.setter(v);
+        this.rw.value = v;
     }
 
     public get same(): boolean {
@@ -158,41 +171,48 @@ export default class Quaternion extends Vector<TQuaternion, Record<any, any>> {
      * @returns
      */
     public fromMatrix(m: Matrix4, silend?: boolean): this {
-        const trace = m.trace(3);
+        const
+            trace = m.trace(3),
+            {
+                x1, y1, z1,
+                x2, y2, z2,
+                x3, y3, z3
+            } = m;
+
         if (trace > 0) {
             const s = 0.5 / Math.sqrt(trace + 1.0);
             return this.set(
-                (m.y3 - m.z2) * s,
-                (m.z1 - m.x3) * s,
-                (m.x2 - m.y1) * s,
+                (y2 - z3) * s,
+                (z1 - x3) * s,
+                (x2 - y1) * s,
                 0.25 / s,
                 silend,
             );
-        } else if (m.x1 > m.y2 && m.x1 > m.z3) {
-            const s = 2.0 * Math.sqrt(1.0 + m.x1 - m.y2 - m.z3);
+        } else if (x1 > y2 && x1 > z3) {
+            const s = 2.0 * Math.sqrt(1.0 + x1 - y2 - z3);
             return this.set(
                 0.25 * s,
-                (m.y1 + m.x2) / s,
-                (m.z1 + m.x3) / s,
-                (m.y3 - m.z2) / s,
+                (x2 + y1) / s,
+                (z1 + x3) / s,
+                (y2 - z3) / s,
                 silend,
             );
-        } else if (m.y2 > m.z3) {
-            const s = 2.0 * Math.sqrt(1.0 + m.y2 - m.x1 - m.z3);
+        } else if (y2 > z3) {
+            const s = 2.0 * Math.sqrt(1.0 + y2 - x1 - z3);
             return this.set(
-                (m.y1 + m.x2) / s,
+                (x2 + y1) / s,
                 0.25 * s,
-                (m.z2 + m.y3) / s,
-                (m.z1 - m.x3) / s,
+                (y3 + z2) / s,
+                (z1 - x3) / s,
                 silend,
             );
         } else {
-            const s = 2.0 * Math.sqrt(1.0 + m.z3 - m.x1 - m.y2);
+            const s = 2.0 * Math.sqrt(1.0 + z3 - x1 - y2);
             return this.set(
-                (m.x2 - m.y1) / s,
-                (m.z1 + m.x3) / s,
-                (m.z2 + m.y3) / s,
+                (z1 + x3) / s,
+                (y3 + z2) / s,
                 0.25 * s,
+                (x2 - y1) / s,
                 silend,
             );
         }
@@ -229,20 +249,22 @@ export default class Quaternion extends Vector<TQuaternion, Record<any, any>> {
             this.x === q.x && this.y === q.y && this.z === q.z && this.w === q.w
         );
     }
-
+    /**
+     * 单位四元数
+     * @returns 
+     */
+    public identity(): this {
+        return this.set(0, 0, 0, 1);
+    }
     protected unifySilendSetter(...array: unknown[]): this {
         const [x, y, z, w] = array;
-        typeof z === "number" && this.rz.silentSetter(z);
-        typeof w === "number" && this.rw.silentSetter(w);
+        typeof z === "number" && this.rz.setter(z);
+        typeof w === "number" && this.rw.setter(w);
         return super.unifySilendSetter(x, y);
     }
 
     public toArray(): TQuaternion {
         return [this.x, this.y, this.z, this.w];
-    }
-
-    public identity(): this {
-        return this.set(0, 0, 0, 1);
     }
 }
 

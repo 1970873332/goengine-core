@@ -1,11 +1,11 @@
-import ResponseAttribute from "@core/object/attribute/Response";
-import { Vector2, Vector3 } from "../Index";
+import Value from "@core/object/attribute/Value";
+import { Matrix4, Vector2, Vector3 } from "../Index";
 import Vector from "../Vector";
 
 /**
  * 四维向量
  */
-export default class Vector4 extends Vector<TVector4, Record<any, any>> {
+export default class Vector4 extends Vector<TVector4, {}, Vector4> {
     /**
      * 是否是四维向量
      */
@@ -29,6 +29,20 @@ export default class Vector4 extends Vector<TVector4, Record<any, any>> {
         return arr?.map((v) => Vector4.fromArray(v)) ?? [];
     }
     /**
+     * 创建一个零向量
+     * @returns 
+     */
+    public static zero(): Vector4 {
+        return new Vector4();
+    }
+    /**
+     * 创建一个单位向量
+     * @returns 
+     */
+    public static one(): Vector4 {
+        return new Vector4(1, 1, 1, 1);
+    }
+    /**
      * 合并Vector2
      * @param v1
      * @param v2
@@ -49,27 +63,31 @@ export default class Vector4 extends Vector<TVector4, Record<any, any>> {
         this.reckSilendSetter(this.rw, w);
     }
 
-    public readonly rz = new ResponseAttribute(
+    public readonly rz = new Value<number>(
         0,
-        this.safety.bind(this),
+        {
+            set: (nv) => this.safety(nv)
+        }
     ).bindCallback(this.trigger.bind(this));
 
-    public readonly rw = new ResponseAttribute(
+    public readonly rw = new Value<number>(
         0,
-        this.safety.bind(this),
+        {
+            set: (nv) => this.safety(nv)
+        }
     ).bindCallback(this.trigger.bind(this));
 
     public get z(): number {
         return this.rz.value;
     }
     public set z(v: number) {
-        this.rz.setter(v);
+        this.rz.value = v;
     }
     public get w(): number {
         return this.rw.value;
     }
     public set w(v: number) {
-        this.rw.setter(v);
+        this.rw.value = v;
     }
 
     public get v3(): number {
@@ -221,6 +239,22 @@ export default class Vector4 extends Vector<TVector4, Record<any, any>> {
         return [this.ahead, this.behind];
     }
 
+    /**
+     * 设置Z
+     * @param v 
+     * @returns 
+     */
+    public setZ(v: number): void {
+        this.z = v;
+    }
+    /**
+     * 设置W
+     * @param v 
+     * @returns 
+     */
+    public setW(v: number): void {
+        this.w = v;
+    }
     /**
      * 设置
      * @param x
@@ -377,6 +411,27 @@ export default class Vector4 extends Vector<TVector4, Record<any, any>> {
         );
     }
     /**
+     * 应用矩阵变换
+     * @param m
+     * @returns
+     */
+    public applyMatrix4(m: Matrix4): this {
+        const { x, y, z, w } = this,
+            {
+                x1, x2, x3, x4,
+                y1, y2, y3, y4,
+                z1, z2, z3, z4,
+                w1, w2, w3, w4
+            } = m;
+
+        return this.set(
+            x1 * x + x2 * y + x3 * z + x4 * w,
+            y1 * x + y2 * y + y3 * z + y4 * w,
+            z1 * x + z2 * y + z3 * z + z4 * w,
+            w1 * x + w2 * y + w3 * z + w4 * w
+        );
+    }
+    /**
      * 转为Vector3
      * @param vectors
      * @returns
@@ -385,20 +440,30 @@ export default class Vector4 extends Vector<TVector4, Record<any, any>> {
         const [n1, n2, n3] = names;
         return new Vector3(this[n1], this[n2], this[n3]);
     }
+    /**
+     * 设置为零向量
+     * @returns 
+     */
+    public zero(): this {
+        return this.set(0, 0, 0, 0);
+    }
+    /**
+     * 设置为单位向量
+     * @returns 
+     */
+    public one(): this {
+        return this.set(1, 1, 1, 1);
+    }
 
     protected unifySilendSetter(...array: unknown[]): this {
         const [x, y, z, w] = array;
-        typeof z === "number" && this.rz.silentSetter(z);
-        typeof w === "number" && this.rw.silentSetter(w);
+        typeof z === "number" && this.rz.setter(z);
+        typeof w === "number" && this.rw.setter(w);
         return super.unifySilendSetter(x, y);
     }
 
     public toArray(): TVector4 {
         return [this.x, this.y, this.z, this.w];
-    }
-
-    public identity(): this {
-        return this.set(0, 0, 0, 0);
     }
 }
 

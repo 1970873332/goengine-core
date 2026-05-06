@@ -62,24 +62,18 @@ export default class SceneComponent<
 
     /**
      * 重置尺寸
-     * @Super
      */
     public resize(): void {
         CanvasUtils.syncCanvasSize(this.element);
     }
 
-    /**
-     * @Super
-     */
     protected main(): void {
         if (this.needStats) {
             this.stats = new Stats();
             document.body.appendChild(this.stats.dom);
         }
     }
-    /**
-     * @Super
-     */
+
     protected addEvents(): void {
         this.obsever.observe(this.element);
     }

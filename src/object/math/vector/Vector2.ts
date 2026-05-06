@@ -4,7 +4,7 @@ import Vector from "../Vector";
 /**
  * 二维向量
  */
-export default class Vector2 extends Vector<TVector2, Record<any, any>> {
+export default class Vector2 extends Vector<TVector2, {}, Vector2> {
     /**
      * 是否是二维向量
      */
@@ -26,6 +26,20 @@ export default class Vector2 extends Vector<TVector2, Record<any, any>> {
      */
     public static fromArrays(arr?: Partial<TVector2>[]): Vector2[] {
         return arr?.map((v) => Vector2.fromArray(v)) ?? [];
+    }
+    /**
+     * 创建一个零向量
+     * @returns 
+     */
+    public static zero(): Vector2 {
+        return new Vector2();
+    }
+    /**
+     * 创建一个单位向量
+     * @returns 
+     */
+    public static one(): Vector2 {
+        return new Vector2(1, 1);
     }
 
     public get width(): number {
@@ -238,13 +252,23 @@ export default class Vector2 extends Vector<TVector2, Record<any, any>> {
             Math.round((fixed / this.width) * this.height),
         );
     }
+    /**
+     * 设置为零向量
+     * @returns 
+     */
+    public zero(): this {
+        return this.set(0, 0);
+    }
+    /**
+     * 设置为单位向量
+     * @returns 
+     */
+    public one(): this {
+        return this.set(1, 1);
+    }
 
     public toArray(): TVector2 {
         return [this.x, this.y];
-    }
-
-    public identity(): this {
-        return this.set(0, 0);
     }
 }
 

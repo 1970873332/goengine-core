@@ -4,7 +4,7 @@ import Matrix from "../Matrix";
 /**
  * 3x3矩阵
  */
-export default class Matrix3 extends Matrix<TMatrix3, Record<any, any>> {
+export default class Matrix3 extends Matrix<TMatrix3, {}> {
     /**
      * 是否是3x3矩阵
      */
@@ -78,18 +78,26 @@ export default class Matrix3 extends Matrix<TMatrix3, Record<any, any>> {
      * @returns
      */
     public multiply(m: Matrix3): this {
+        const a11 = this.x1, a12 = this.x2, a13 = this.x3;
+        const a21 = this.y1, a22 = this.y2, a23 = this.y3;
+        const a31 = this.z1, a32 = this.z2, a33 = this.z3;
+
+        const b11 = m.x1, b12 = m.x2, b13 = m.x3;
+        const b21 = m.y1, b22 = m.y2, b23 = m.y3;
+        const b31 = m.z1, b32 = m.z2, b33 = m.z3;
+
         return this.set([
-            this.x1 * m.x1 + this.x2 * m.y1 + this.x3 * m.z1,
-            this.x1 * m.x2 + this.x2 * m.y2 + this.x3 * m.z2,
-            this.x1 * m.x3 + this.x2 * m.y3 + this.x3 * m.z3,
+            a11 * b11 + a12 * b21 + a13 * b31,
+            a21 * b11 + a22 * b21 + a23 * b31,
+            a31 * b11 + a32 * b21 + a33 * b31,
 
-            this.y1 * m.x1 + this.y2 * m.y1 + this.y3 * m.z1,
-            this.y1 * m.x2 + this.y2 * m.y2 + this.y3 * m.z2,
-            this.y1 * m.x3 + this.y2 * m.y3 + this.y3 * m.z3,
+            a11 * b12 + a12 * b22 + a13 * b32,
+            a21 * b12 + a22 * b22 + a23 * b32,
+            a31 * b12 + a32 * b22 + a33 * b32,
 
-            this.z1 * m.x1 + this.z2 * m.y1 + this.z3 * m.z1,
-            this.z1 * m.x2 + this.z2 * m.y2 + this.z3 * m.z2,
-            this.z1 * m.x3 + this.z2 * m.y3 + this.z3 * m.z3,
+            a11 * b13 + a12 * b23 + a13 * b33,
+            a21 * b13 + a22 * b23 + a23 * b33,
+            a31 * b13 + a32 * b23 + a33 * b33,
         ]);
     }
     /**

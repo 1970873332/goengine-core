@@ -9,7 +9,7 @@ export default class CanvasComponent<
 
     constructor(
         element: HTMLCanvasElement,
-        protected contextID: TContext,
+        protected ctxID: TContext,
     ) {
         super(element);
     }
@@ -40,7 +40,7 @@ export default class CanvasComponent<
      */
     public get ctx(): TRenderingContext | undefined {
         return (this.ctx_source ??=
-            (this.element?.getContext(this.contextID, {
+            (this.element?.getContext(this.ctxID, {
                 alpha: true,
                 depth: true,
                 antialias: true,

@@ -24,8 +24,8 @@ export abstract class CanvasUtils {
                 width,
                 height,
             }),
-            context = canvas.getContext("2d");
-        context?.putImageData(imageData, 0, 0);
+            ctx = canvas.getContext("2d");
+        ctx?.putImageData(imageData, 0, 0);
         return canvas.toDataURL();
     }
     /**
