@@ -16,7 +16,7 @@ export class EventTarget<E extends {}>
     /**
      * 用户数据
      */
-    public userData: any = {};
+    public userData: Partial<Record<string, unknown>> = {};
 
     /**
      * 重新初始化

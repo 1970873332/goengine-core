@@ -16,55 +16,16 @@ export default abstract class BasePhysicsNode<
 
     constructor(config?: C) {
         super();
-        this.config.setter(config);
     }
 
     /**
      * 刚体
      */
-    protected declare body_source: T;
-
-    /**
-     * 刚体
-     */
-    public get body(): T {
-        return this.body_source;
-    }
-    protected set body(v: T) {
-        this.body_source = v;
-    }
-
-    /**
-     * 配置
-     */
-    protected config = new Value<C | undefined>(
-        void 0,
-        {
-            set: (nv) => {
-                return this.formatConfig(nv);
-            }
-        }
-    ).bindCallback(this.reBody.bind(this));
-
-    /**
-     * 重置刚体
-     */
-    protected reBody(v?: C): void {
-        throw new Error("未实现reBody");
-    }
-    /**
-     * 格式化配置
-     * @param config
-     * @returns
-     */
-    protected formatConfig(config?: C): C | undefined {
-        return config;
-    }
+    public readonly body = new Value<T | undefined>(void 0);
 
     public toJSON(): ISaveJSON {
         return {
-            ...super.toJSON(),
-            config: this.config.value ?? {},
+            ...super.toJSON()
         };
     }
 }
@@ -73,15 +34,11 @@ interface IEvent { }
 
 interface IConfig { }
 
-interface ISaveJSON extends DuplicatableSaveJSON {
-    /**
-     * 配置
-     */
-    config: Record<any, unknown>;
-}
+interface ISaveJSON extends DuplicatableSaveJSON { }
 
 export {
-    IConfig as BasePhysicsNodeConfig, IEvent as BasePhysicsNodeEvent,
+    IConfig as BasePhysicsNodeConfig,
+    IEvent as BasePhysicsNodeEvent,
     ISaveJSON as BasePhysicsNodeSaveJSON
 };
 
