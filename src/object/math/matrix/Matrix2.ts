@@ -1,15 +1,11 @@
-import { Matrix3, Matrix4 } from "../Index";
 import Matrix from "../Matrix";
+import Matrix3 from "./Matrix3";
+import Matrix4 from "./Matrix4";
 
 /**
  * 2x2矩阵
  */
-export default class Matrix2 extends Matrix<TMatrix2, {}> {
-    /**
-     * 是否是2x2矩阵
-     */
-    public readonly isMatrix2: boolean = true;
-
+export default class Matrix2 extends Matrix<TMatrix2, Matrix2> {
     /**
      * 单位矩阵
      */
@@ -67,11 +63,15 @@ export default class Matrix2 extends Matrix<TMatrix2, {}> {
      * @returns
      */
     public multiply(m: Matrix2): this {
-        const a11 = this.x1, a12 = this.x2;
-        const a21 = this.y1, a22 = this.y2;
+        const a11 = this.x1,
+            a12 = this.x2;
+        const a21 = this.y1,
+            a22 = this.y2;
 
-        const b11 = m.x1, b12 = m.x2;
-        const b21 = m.y1, b22 = m.y2;
+        const b11 = m.x1,
+            b12 = m.x2;
+        const b21 = m.y1,
+            b22 = m.y2;
 
         return this.set([
             a11 * b11 + a12 * b21,

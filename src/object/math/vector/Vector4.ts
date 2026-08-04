@@ -1,22 +1,59 @@
-import Value from "@core/object/attribute/Value";
-import { Matrix4, Vector2, Vector3 } from "../Index";
+import Value from "@goengine/core/src/object/attribute/Value";
+import Matrix4 from "../matrix/Matrix4";
 import Vector from "../Vector";
+import Vector2 from "./Vector2";
+import Vector3 from "./Vector3";
 
 /**
  * 四维向量
  */
-export default class Vector4 extends Vector<TVector4, {}, Vector4> {
+export default class Vector4 extends Vector<TArray, Vector4> {
     /**
-     * 是否是四维向量
+     * 创建一个X向量
+     * @param v
+     * @returns
      */
-    public readonly isVertor4: boolean = true;
-
+    public static fromX(v?: number): Vector4 {
+        return new Vector4(v);
+    }
+    /**
+     * 创建一个Y向量
+     * @param v
+     * @returns
+     */
+    public static fromY(v?: number): Vector4 {
+        return new Vector4(0, v);
+    }
+    /**
+     * 创建一个Z向量
+     * @param v
+     * @returns
+     */
+    public static fromZ(v?: number): Vector4 {
+        return new Vector4(0, 0, v);
+    }
+    /**
+     * 创建一个W向量
+     * @param v
+     * @returns
+     */
+    public static fromW(v?: number): Vector4 {
+        return new Vector4(0, 0, 0, v);
+    }
+    /**
+     * 创建一个标量向量
+     * @param v
+     * @returns
+     */
+    public static fromScalar(v?: number): Vector4 {
+        return new Vector4(v, v, v, v);
+    }
     /**
      * 数组转为Vector4
      * @param arr
      * @returns
      */
-    public static fromArray(arr?: Partial<TVector4>): Vector4 {
+    public static fromArray(arr?: Partial<TArray>): Vector4 {
         const [v1, v2, v3, v4] = arr ?? [];
         return new Vector4(v1, v2, v3, v4);
     }
@@ -25,19 +62,49 @@ export default class Vector4 extends Vector<TVector4, {}, Vector4> {
      * @param arr
      * @returns
      */
-    public static fromArrays(arr?: Partial<TVector4>[]): Vector4[] {
+    public static fromArrays(arr?: Partial<TArray>[]): Vector4[] {
         return arr?.map((v) => Vector4.fromArray(v)) ?? [];
     }
     /**
+     * 从对象创建
+     * @param obj
+     * @returns
+     */
+    public static fromObject(obj: VectorAttr.Vector4): Vector4 {
+        const {
+            x,
+            y,
+            z,
+            w,
+
+            width,
+            height,
+            depth,
+            layer,
+
+            r,
+            g,
+            b,
+            a,
+        } = obj;
+
+        return new Vector4(
+            x ?? width ?? r,
+            y ?? height ?? g,
+            z ?? depth ?? b,
+            w ?? layer ?? a,
+        );
+    }
+    /**
      * 创建一个零向量
-     * @returns 
+     * @returns
      */
     public static zero(): Vector4 {
-        return new Vector4();
+        return new Vector4(0, 0, 0, 0);
     }
     /**
      * 创建一个单位向量
-     * @returns 
+     * @returns
      */
     public static one(): Vector4 {
         return new Vector4(1, 1, 1, 1);
@@ -63,19 +130,13 @@ export default class Vector4 extends Vector<TVector4, {}, Vector4> {
         this.reckSilendSetter(this.rw, w);
     }
 
-    public readonly rz = new Value<number>(
-        0,
-        {
-            set: (nv) => this.safety(nv)
-        }
-    ).bindCallback(this.trigger.bind(this));
+    public readonly rz = new Value<number>(0, {
+        set: (nv) => this.safety(nv),
+    }).bindCallback(this.trigger.bind(this));
 
-    public readonly rw = new Value<number>(
-        0,
-        {
-            set: (nv) => this.safety(nv)
-        }
-    ).bindCallback(this.trigger.bind(this));
+    public readonly rw = new Value<number>(0, {
+        set: (nv) => this.safety(nv),
+    }).bindCallback(this.trigger.bind(this));
 
     public get z(): number {
         return this.rz.value;
@@ -224,13 +285,13 @@ export default class Vector4 extends Vector<TVector4, {}, Vector4> {
      * 获取头部Vector2
      */
     public get ahead(): Vector2 {
-        return Vector2.fromArray([this.x, this.y]);
+        return new Vector2(this.x, this.y);
     }
     /**
      * 获取尾部Vector2
      */
     public get behind(): Vector2 {
-        return Vector2.fromArray([this.z, this.w]);
+        return new Vector2(this.z, this.w);
     }
     /**
      * 获取分割
@@ -241,16 +302,16 @@ export default class Vector4 extends Vector<TVector4, {}, Vector4> {
 
     /**
      * 设置Z
-     * @param v 
-     * @returns 
+     * @param v
+     * @returns
      */
     public setZ(v: number): void {
         this.z = v;
     }
     /**
      * 设置W
-     * @param v 
-     * @returns 
+     * @param v
+     * @returns
      */
     public setW(v: number): void {
         this.w = v;
@@ -261,17 +322,38 @@ export default class Vector4 extends Vector<TVector4, {}, Vector4> {
      * @param y
      * @param z
      * @param w
-     * @param silend
+     * @param silence 静默
      * @returns
      */
     public set(
-        x: number,
-        y: number,
-        z: number,
-        w: number,
-        silend?: boolean,
+        x?: number,
+        y?: number,
+        z?: number,
+        w?: number,
+        silence?: boolean,
     ): this {
-        return this.unifySetter(silend, x, y, z, w);
+        return this.unifySetter(silence, x, y, z, w);
+    }
+    /**
+     * 设置为标量
+     * @param v
+     * @param silence
+     * @returns
+     */
+    public setScalar(v?: number, silence?: boolean): this {
+        return this.set(v, v, v, v, silence);
+    }
+    /**
+     * 设置
+     * @param x
+     * @param y
+     * @param z
+     * @param w
+     * @returns
+     */
+    public liveset(x?: number, y?: number, z?: number, w?: number): this {
+        this.unifySetter(true, x, y, z, w);
+        return this.trigger();
     }
     /**
      * 设置为相加结果
@@ -417,18 +499,14 @@ export default class Vector4 extends Vector<TVector4, {}, Vector4> {
      */
     public applyMatrix4(m: Matrix4): this {
         const { x, y, z, w } = this,
-            {
-                x1, x2, x3, x4,
-                y1, y2, y3, y4,
-                z1, z2, z3, z4,
-                w1, w2, w3, w4
-            } = m;
+            { x1, x2, x3, x4, y1, y2, y3, y4, z1, z2, z3, z4, w1, w2, w3, w4 } =
+                m;
 
         return this.set(
             x1 * x + x2 * y + x3 * z + x4 * w,
             y1 * x + y2 * y + y3 * z + y4 * w,
             z1 * x + z2 * y + z3 * z + z4 * w,
-            w1 * x + w2 * y + w3 * z + w4 * w
+            w1 * x + w2 * y + w3 * z + w4 * w,
         );
     }
     /**
@@ -436,36 +514,47 @@ export default class Vector4 extends Vector<TVector4, {}, Vector4> {
      * @param vectors
      * @returns
      */
-    public toVector3(names: TSelect = ["x", "y", "z"]): Vector3 {
+    public toVector3(names: TDownArray = ["x", "y", "z"]): Vector3 {
         const [n1, n2, n3] = names;
         return new Vector3(this[n1], this[n2], this[n3]);
     }
     /**
      * 设置为零向量
-     * @returns 
+     * @returns
      */
     public zero(): this {
         return this.set(0, 0, 0, 0);
     }
     /**
      * 设置为单位向量
-     * @returns 
+     * @returns
      */
     public one(): this {
         return this.set(1, 1, 1, 1);
+    }
+    /**
+     * 判断是否有效
+     * @returns
+     */
+    public valid(): boolean {
+        return super.valid() && !!this.w;
     }
 
     protected unifySilendSetter(...array: unknown[]): this {
         const [x, y, z, w] = array;
         typeof z === "number" && this.rz.setter(z);
         typeof w === "number" && this.rw.setter(w);
+
         return super.unifySilendSetter(x, y);
     }
 
-    public toArray(): TVector4 {
+    public toArray(): TArray {
         return [this.x, this.y, this.z, this.w];
     }
 }
 
-type TVector4 = [number, number, number, number];
-type TSelect<T = "x" | "y" | "z" | "w"> = [T, T, T];
+type TArray = [number, number, number, number];
+
+type TDownArray<T = "x" | "y" | "z" | "w"> = [T, T, T];
+
+export { TArray as Vector4Array };

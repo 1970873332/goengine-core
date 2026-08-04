@@ -7,20 +7,15 @@ export default abstract class TaskComponent<
     E extends IEvent,
 > extends EventTarget<E> {
     /**
-     * nextTick
-     */
-    protected nextTick?: IterableIterator<void | Promise<void>> =
-        this.nextTickFunc();
-    /**
      * 动画帧id
      */
     protected animationID: number = requestAnimationFrame(
         this.implement.bind(this),
     );
     /**
-     * 时间流
+     * nextTick
      */
-    public timeflow: number = 1;
+    protected nextTick? = this.nextTickFunc();
 
     /**
      * 执行队列
@@ -29,7 +24,7 @@ export default abstract class TaskComponent<
         yield this.main();
         yield this.init();
         yield this.addEvents();
-        yield new Promise(resolve => {
+        yield new Promise((resolve) => {
             setTimeout(async () => {
                 await this.applyScript();
                 this.ready();
@@ -49,26 +44,27 @@ export default abstract class TaskComponent<
         }
         return this.implement();
     }
+
     /**
      * 入口函数
      */
-    protected main(): void { }
+    protected main(): void {}
     /**
      * 初始化
      */
-    protected init(): void { }
+    protected init(): void {}
     /**
      * 事件处理
      */
-    protected addEvents(): void { }
+    protected addEvents(): void {}
     /**
      * 后续脚本
      */
-    protected async applyScript(): Promise<void> { }
+    protected async applyScript(): Promise<void> {}
     /**
      * 准备就绪
      */
-    protected ready(): void { }
+    protected ready(): void {}
     /**
      * 更新
      * @param delta
@@ -84,7 +80,8 @@ export default abstract class TaskComponent<
     }
 }
 
-interface IEvent { }
+interface IEvent {}
 
-export { IEvent as TaskComponentEvent };
+type IAny = TaskComponent<any>;
 
+export { IAny as TaskComponentAny, IEvent as TaskComponentEvent };

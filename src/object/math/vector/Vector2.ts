@@ -1,21 +1,65 @@
-import { Vector3, Vector4 } from "../Index";
 import Vector from "../Vector";
+import Vector3 from "./Vector3";
+import Vector4 from "./Vector4";
 
 /**
  * 二维向量
  */
-export default class Vector2 extends Vector<TVector2, {}, Vector2> {
+export default class Vector2 extends Vector<TArray, Vector2> {
     /**
-     * 是否是二维向量
+     * 是否有效
+     * @param v
+     * @returns
      */
-    public readonly isVertor2: boolean = true;
+    public static valid(v: Partial<VectorAttr.Vector2>): boolean {
+        const { x, y, width, height } = v;
 
+        return !!(x ?? width) && !!(y ?? height);
+    }
+    /**
+     * 创建一个X向量
+     * @param v
+     * @returns
+     */
+    public static fromX(v?: number): Vector2 {
+        return new Vector2(v);
+    }
+    /**
+     * 创建一个Y向量
+     * @param v
+     * @returns
+     */
+    public static fromY(v?: number): Vector2 {
+        return new Vector2(0, v);
+    }
+    /**
+     * 从对象创建
+     */
+    public static fromObject(obj: VectorAttr.Vector2): Vector2 {
+        const {
+            x,
+            y,
+
+            width,
+            height,
+        } = obj;
+
+        return new Vector2(x ?? width, y ?? height);
+    }
+    /**
+     * 创建一个标量向量
+     * @param v
+     * @returns
+     */
+    public static fromScalar(v?: number): Vector2 {
+        return new Vector2(v, v);
+    }
     /**
      * 数组转为Vector2
      * @param arr
      * @returns
      */
-    public static fromArray(arr?: Partial<TVector2>): Vector2 {
+    public static fromArray(arr?: Partial<TArray>): Vector2 {
         const [v1, v2] = arr ?? [];
         return new Vector2(v1, v2);
     }
@@ -24,22 +68,36 @@ export default class Vector2 extends Vector<TVector2, {}, Vector2> {
      * @param arr
      * @returns
      */
-    public static fromArrays(arr?: Partial<TVector2>[]): Vector2[] {
+    public static fromArrays(arr?: Partial<TArray>[]): Vector2[] {
         return arr?.map((v) => Vector2.fromArray(v)) ?? [];
     }
     /**
      * 创建一个零向量
-     * @returns 
+     * @returns
      */
     public static zero(): Vector2 {
-        return new Vector2();
+        return new Vector2(0, 0);
     }
     /**
      * 创建一个单位向量
-     * @returns 
+     * @returns
      */
     public static one(): Vector2 {
         return new Vector2(1, 1);
+    }
+    /**
+     * 创建一个x轴向量
+     * @returns
+     */
+    public static xAxis(): Vector2 {
+        return Vector2.fromX(1);
+    }
+    /**
+     * 创建一个y轴向量
+     * @returns
+     */
+    public static yAxis(): Vector2 {
+        return Vector2.fromY(1);
     }
 
     public get width(): number {
@@ -85,11 +143,30 @@ export default class Vector2 extends Vector<TVector2, {}, Vector2> {
      * 设置
      * @param x
      * @param y
-     * @param silend
+     * @param silence 静默
      * @returns
      */
-    public set(x: number, y: number, silend?: boolean): this {
-        return this.unifySetter(silend, x, y);
+    public set(x?: number, y?: number, silence?: boolean): this {
+        return this.unifySetter(silence, x, y);
+    }
+    /**
+     * 设置为标量
+     * @param v
+     * @param silence
+     * @returns
+     */
+    public setScalar(v?: number, silence?: boolean): this {
+        return this.set(v, v, silence);
+    }
+    /**
+     * 设置
+     * @param x
+     * @param y
+     * @returns
+     */
+    public liveset(x?: number, y?: number): this {
+        this.unifySetter(true, x, y);
+        return this.trigger();
     }
     /**
      * 设置为相加结果
@@ -254,22 +331,24 @@ export default class Vector2 extends Vector<TVector2, {}, Vector2> {
     }
     /**
      * 设置为零向量
-     * @returns 
+     * @returns
      */
     public zero(): this {
         return this.set(0, 0);
     }
     /**
      * 设置为单位向量
-     * @returns 
+     * @returns
      */
     public one(): this {
         return this.set(1, 1);
     }
 
-    public toArray(): TVector2 {
+    public toArray(): TArray {
         return [this.x, this.y];
     }
 }
 
-type TVector2 = [number, number];
+type TArray = [number, number];
+
+export { TArray as Vector2Array };

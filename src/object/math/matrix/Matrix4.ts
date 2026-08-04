@@ -1,23 +1,17 @@
-import { Euler, Quaternion, Vector3 } from "../Index";
 import Matrix from "../Matrix";
+import Euler from "../transfrom/Euler";
+import Quaternion from "../transfrom/Quaternion";
+import Vector3 from "../vector/Vector3";
 
 /**
  * 4x4矩阵
  */
-export default class Matrix4 extends Matrix<TMatrix4, {}> {
-    /**
-     * 是否是4x4矩阵
-     */
-    public readonly isMatrix4: boolean = true;
-
+export default class Matrix4 extends Matrix<TMatrix4, Matrix4> {
     /**
      * 单位矩阵
      */
     public static readonly identity: TMatrix4 = [
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1,
+        1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
     ];
 
     /**
@@ -55,61 +49,100 @@ export default class Matrix4 extends Matrix<TMatrix4, {}> {
 
     /**
      * X轴旋转矩阵
-     * @param radian 
-     * @returns 
+     * @param radian
+     * @returns
      */
     public static rotationX(radian: number): Matrix4 {
-        const cos = Math.cos(radian), sin = Math.sin(radian);
+        const cos = Math.cos(radian),
+            sin = Math.sin(radian);
         // 列主序:
         // col0 = (1,0,0,0)
         // col1 = (0, cos, sin, 0)
         // col2 = (0,-sin, cos, 0)
         // col3 = (0, 0, 0, 1)
         return new Matrix4().set([
-            1, 0, 0, 0,
-            0, cos, sin, 0,
-            0, -sin, cos, 0,
-            0, 0, 0, 1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            cos,
+            sin,
+            0,
+            0,
+            -sin,
+            cos,
+            0,
+            0,
+            0,
+            0,
+            1,
         ]);
     }
 
     /**
      * Y轴旋转矩阵
-     * @param radian 
-     * @returns 
+     * @param radian
+     * @returns
      */
     public static rotationY(radian: number): Matrix4 {
-        const cos = Math.cos(radian), sin = Math.sin(radian);
+        const cos = Math.cos(radian),
+            sin = Math.sin(radian);
         // 列主序:
         // col0 = (cos, 0, -sin, 0)
         // col1 = (0, 1, 0, 0)
         // col2 = (sin, 0, cos, 0)
         // col3 = (0, 0, 0, 1)
         return new Matrix4().set([
-            cos, 0, -sin, 0,
-            0, 1, 0, 0,
-            sin, 0, cos, 0,
-            0, 0, 0, 1,
+            cos,
+            0,
+            -sin,
+            0,
+            0,
+            1,
+            0,
+            0,
+            sin,
+            0,
+            cos,
+            0,
+            0,
+            0,
+            0,
+            1,
         ]);
     }
 
     /**
      * Z轴旋转矩阵
-     * @param radian 
-     * @returns 
+     * @param radian
+     * @returns
      */
     public static rotationZ(radian: number): Matrix4 {
-        const cos = Math.cos(radian), sin = Math.sin(radian);
+        const cos = Math.cos(radian),
+            sin = Math.sin(radian);
         // 列主序:
         // col0 = (cos, sin, 0, 0)
         // col1 = (-sin, cos, 0, 0)
         // col2 = (0, 0, 1, 0)
         // col3 = (0, 0, 0, 1)
         return new Matrix4().set([
-            cos, sin, 0, 0,
-            -sin, cos, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1,
+            cos,
+            sin,
+            0,
+            0,
+            -sin,
+            cos,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
         ]);
     }
 
@@ -121,10 +154,22 @@ export default class Matrix4 extends Matrix<TMatrix4, {}> {
     public static scale(v: Vector3): Matrix4 {
         // 对角阵，列主序与行主序相同
         return new Matrix4().set([
-            v.x, 0, 0, 0,
-            0, v.y, 0, 0,
-            0, 0, v.z, 0,
-            0, 0, 0, 1,
+            v.x,
+            0,
+            0,
+            0,
+            0,
+            v.y,
+            0,
+            0,
+            0,
+            0,
+            v.z,
+            0,
+            0,
+            0,
+            0,
+            1,
         ]);
     }
 
@@ -136,83 +181,114 @@ export default class Matrix4 extends Matrix<TMatrix4, {}> {
     public static translate(v: Vector3): Matrix4 {
         // 列主序: 平移量放在第4列的前三个分量
         return new Matrix4().set([
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            v.x, v.y, v.z, 1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            v.x,
+            v.y,
+            v.z,
+            1,
         ]);
     }
 
     /**
      * 四元数转旋转矩阵
-     * @param q 
-     * @returns 
+     * @param q
+     * @returns
      */
     public static quaternion(q: Quaternion): Matrix4 {
         const { x, y, z, w } = q;
-        const x2 = x + x, y2 = y + y, z2 = z + z;
-        const xx = x * x2, xy = x * y2, xz = x * z2;
-        const yy = y * y2, yz = y * z2, zz = z * z2;
-        const wx = w * x2, wy = w * y2, wz = w * z2;
+        const x2 = x + x,
+            y2 = y + y,
+            z2 = z + z;
+        const xx = x * x2,
+            xy = x * y2,
+            xz = x * z2;
+        const yy = y * y2,
+            yz = y * z2,
+            zz = z * z2;
+        const wx = w * x2,
+            wy = w * y2,
+            wz = w * z2;
 
         // 列主序（原行主序矩阵的转置）
         return new Matrix4().set([
-            1 - (yy + zz),   // col0 row0
-            xy + wz,         // col0 row1
-            xz - wy,         // col0 row2
-            0,               // col0 row3
+            1 - (yy + zz), // col0 row0
+            xy + wz, // col0 row1
+            xz - wy, // col0 row2
+            0, // col0 row3
 
-            xy - wz,         // col1 row0
-            1 - (xx + zz),   // col1 row1
-            yz + wx,         // col1 row2
-            0,               // col1 row3
+            xy - wz, // col1 row0
+            1 - (xx + zz), // col1 row1
+            yz + wx, // col1 row2
+            0, // col1 row3
 
-            xz + wy,         // col2 row0
-            yz - wx,         // col2 row1
-            1 - (xx + yy),   // col2 row2
-            0,               // col2 row3
+            xz + wy, // col2 row0
+            yz - wx, // col2 row1
+            1 - (xx + yy), // col2 row2
+            0, // col2 row3
 
-            0, 0, 0, 1,
+            0,
+            0,
+            0,
+            1,
         ]);
     }
 
     /**
      * 合并平移旋转缩放为矩阵
-     * @param p 
-     * @param q 
-     * @param s 
-     * @returns 
+     * @param p
+     * @param q
+     * @param s
+     * @returns
      */
     public static compose(p: Vector3, q: Quaternion, s: Vector3): Matrix4 {
         const { x, y, z, w } = q;
         const { x: sx, y: sy, z: sz } = s;
         const { x: px, y: py, z: pz } = p;
-        const x2 = x + x, y2 = y + y, z2 = z + z;
-        const xx = x * x2, xy = x * y2, xz = x * z2;
-        const yy = y * y2, yz = y * z2, zz = z * z2;
-        const wx = w * x2, wy = w * y2, wz = w * z2;
+        const x2 = x + x,
+            y2 = y + y,
+            z2 = z + z;
+        const xx = x * x2,
+            xy = x * y2,
+            xz = x * z2;
+        const yy = y * y2,
+            yz = y * z2,
+            zz = z * z2;
+        const wx = w * x2,
+            wy = w * y2,
+            wz = w * z2;
 
         // 列主序: 先四元数转矩阵（列主序），再乘缩放和平移
         return new Matrix4().set([
-            (1 - (yy + zz)) * sx,   // col0 row0
-            (xy + wz) * sx,         // col0 row1
-            (xz - wy) * sx,         // col0 row2
-            0,                      // col0 row3
+            (1 - (yy + zz)) * sx, // col0 row0
+            (xy + wz) * sx, // col0 row1
+            (xz - wy) * sx, // col0 row2
+            0, // col0 row3
 
-            (xy - wz) * sy,         // col1 row0
-            (1 - (xx + zz)) * sy,   // col1 row1
-            (yz + wx) * sy,         // col1 row2
-            0,                      // col1 row3
+            (xy - wz) * sy, // col1 row0
+            (1 - (xx + zz)) * sy, // col1 row1
+            (yz + wx) * sy, // col1 row2
+            0, // col1 row3
 
-            (xz + wy) * sz,         // col2 row0
-            (yz - wx) * sz,         // col2 row1
-            (1 - (xx + yy)) * sz,   // col2 row2
-            0,                      // col2 row3
+            (xz + wy) * sz, // col2 row0
+            (yz - wx) * sz, // col2 row1
+            (1 - (xx + yy)) * sz, // col2 row2
+            0, // col2 row3
 
-            px,                     // col3 row0
-            py,                     // col3 row1
-            pz,                     // col3 row2
-            1,                      // col3 row3
+            px, // col3 row0
+            py, // col3 row1
+            pz, // col3 row2
+            1, // col3 row3
         ]);
     }
 
@@ -320,8 +396,8 @@ export default class Matrix4 extends Matrix<TMatrix4, {}> {
 
     /**
      * 矩阵乘法
-     * @param m 
-     * @returns 
+     * @param m
+     * @returns
      */
     public multiply(m: Matrix4): this {
         // 使用列主序的 getter 实现 C = this * m
@@ -394,8 +470,8 @@ export default class Matrix4 extends Matrix<TMatrix4, {}> {
 
     /**
      * 缩放
-     * @param v 
-     * @returns 
+     * @param v
+     * @returns
      */
     public scale(v: Vector3): this {
         return this.multiply(Matrix4.scale(v));
@@ -403,8 +479,8 @@ export default class Matrix4 extends Matrix<TMatrix4, {}> {
 
     /**
      * 平移
-     * @param v 
-     * @returns 
+     * @param v
+     * @returns
      */
     public translate(v: Vector3): this {
         return this.multiply(Matrix4.translate(v));
@@ -466,10 +542,22 @@ export default class Matrix4 extends Matrix<TMatrix4, {}> {
 
         // 列主序 lookAt 矩阵
         return this.set([
-            xAxis.x, xAxis.y, xAxis.z, -xAxis.dot(eye),
-            yAxis.x, yAxis.y, yAxis.z, -yAxis.dot(eye),
-            zAxis.x, zAxis.y, zAxis.z, -zAxis.dot(eye),
-            0, 0, 0, 1,
+            xAxis.x,
+            xAxis.y,
+            xAxis.z,
+            -xAxis.dot(eye),
+            yAxis.x,
+            yAxis.y,
+            yAxis.z,
+            -yAxis.dot(eye),
+            zAxis.x,
+            zAxis.y,
+            zAxis.z,
+            -zAxis.dot(eye),
+            0,
+            0,
+            0,
+            1,
         ]);
     }
 

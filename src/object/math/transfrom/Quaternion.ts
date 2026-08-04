@@ -1,16 +1,12 @@
-import Value from "@core/object/attribute/Value";
-import { Euler, Matrix4 } from "../Index";
+import Value from "@goengine/core/src/object/attribute/Value";
+import Matrix4 from "../matrix/Matrix4";
 import Vector from "../Vector";
+import Euler from "./Euler";
 
 /**
  * 四元数
  */
-export default class Quaternion extends Vector<TQuaternion, {}, Quaternion> {
-    /**
-     * 是否是四元数
-     */
-    public readonly isQuaternion: boolean = true;
-
+export default class Quaternion extends Vector<TQuaternion, Quaternion> {
     /**
      * 数组转为Quernion
      * @param arr
@@ -30,7 +26,7 @@ export default class Quaternion extends Vector<TQuaternion, {}, Quaternion> {
     }
     /**
      * 创建一个单位四元数
-     * @returns 
+     * @returns
      */
     public static identity(): Quaternion {
         return new Quaternion(0, 0, 0, 1);
@@ -47,19 +43,13 @@ export default class Quaternion extends Vector<TQuaternion, {}, Quaternion> {
         this.reckSilendSetter(this.rw, w);
     }
 
-    public readonly rz = new Value<number>(
-        0,
-        {
-            set: (nv) => this.safety(nv)
-        }
-    ).bindCallback(this.trigger.bind(this));
+    public readonly rz = new Value<number>(0, {
+        set: (nv) => this.safety(nv),
+    }).bindCallback(this.trigger.bind(this));
 
-    public readonly rw = new Value<number>(
-        1,
-        {
-            set: (nv) => this.safety(nv)
-        }
-    ).bindCallback(this.trigger.bind(this));
+    public readonly rw = new Value<number>(1, {
+        set: (nv) => this.safety(nv),
+    }).bindCallback(this.trigger.bind(this));
 
     public get z(): number {
         return this.rz.value;
@@ -99,10 +89,10 @@ export default class Quaternion extends Vector<TQuaternion, {}, Quaternion> {
     /**
      * Euler转为Quaternion
      * @param euler
-     * @param silend
+     * @param silence 静默
      * @returns
      */
-    public fromEuler(euler: Euler, silend?: boolean): this {
+    public fromEuler(euler: Euler, silence?: boolean): this {
         const cx = Math.cos(euler.x / 2);
         const cy = Math.cos(euler.y / 2);
         const cz = Math.cos(euler.z / 2);
@@ -118,7 +108,7 @@ export default class Quaternion extends Vector<TQuaternion, {}, Quaternion> {
                     cx * sy * cz - sx * cy * sz,
                     cx * cy * sz + sx * sy * cz,
                     cx * cy * cz - sx * sy * sz,
-                    silend,
+                    silence,
                 );
             case "YXZ":
                 return this.set(
@@ -126,7 +116,7 @@ export default class Quaternion extends Vector<TQuaternion, {}, Quaternion> {
                     cx * sy * cz - sx * cy * sz,
                     cx * cy * sz - sx * sy * cz,
                     cx * cy * cz + sx * sy * sz,
-                    silend,
+                    silence,
                 );
             case "ZXY":
                 return this.set(
@@ -134,7 +124,7 @@ export default class Quaternion extends Vector<TQuaternion, {}, Quaternion> {
                     cx * sy * cz + sx * cy * sz,
                     cx * cy * sz + sx * sy * cz,
                     cx * cy * cz - sx * sy * sz,
-                    silend,
+                    silence,
                 );
             case "ZYX":
                 return this.set(
@@ -142,7 +132,7 @@ export default class Quaternion extends Vector<TQuaternion, {}, Quaternion> {
                     cx * sy * cz + sx * cy * sz,
                     cx * cy * sz - sx * sy * cz,
                     cx * cy * cz + sx * sy * sz,
-                    silend,
+                    silence,
                 );
             case "YZX":
                 return this.set(
@@ -150,7 +140,7 @@ export default class Quaternion extends Vector<TQuaternion, {}, Quaternion> {
                     cx * sy * cz + sx * cy * sz,
                     cx * cy * sz - sx * sy * cz,
                     cx * cy * cz - sx * sy * sz,
-                    silend,
+                    silence,
                 );
             case "XZY":
                 return this.set(
@@ -158,7 +148,7 @@ export default class Quaternion extends Vector<TQuaternion, {}, Quaternion> {
                     1 * sy * cz - sx * cy * sz,
                     1 * cy * sz + sx * sy * cz,
                     1 * cy * cz + sx * sy * sz,
-                    silend,
+                    silence,
                 );
             default:
                 return this;
@@ -167,17 +157,12 @@ export default class Quaternion extends Vector<TQuaternion, {}, Quaternion> {
     /**
      * Matrix转为Quaternion
      * @param m
-     * @param silend
+     * @param silence 静默
      * @returns
      */
-    public fromMatrix(m: Matrix4, silend?: boolean): this {
-        const
-            trace = m.trace(3),
-            {
-                x1, y1, z1,
-                x2, y2, z2,
-                x3, y3, z3
-            } = m;
+    public fromMatrix(m: Matrix4, silence?: boolean): this {
+        const trace = m.trace(3),
+            { x1, y1, z1, x2, y2, z2, x3, y3, z3 } = m;
 
         if (trace > 0) {
             const s = 0.5 / Math.sqrt(trace + 1.0);
@@ -186,7 +171,7 @@ export default class Quaternion extends Vector<TQuaternion, {}, Quaternion> {
                 (z1 - x3) * s,
                 (x2 - y1) * s,
                 0.25 / s,
-                silend,
+                silence,
             );
         } else if (x1 > y2 && x1 > z3) {
             const s = 2.0 * Math.sqrt(1.0 + x1 - y2 - z3);
@@ -195,7 +180,7 @@ export default class Quaternion extends Vector<TQuaternion, {}, Quaternion> {
                 (x2 + y1) / s,
                 (z1 + x3) / s,
                 (y2 - z3) / s,
-                silend,
+                silence,
             );
         } else if (y2 > z3) {
             const s = 2.0 * Math.sqrt(1.0 + y2 - x1 - z3);
@@ -204,7 +189,7 @@ export default class Quaternion extends Vector<TQuaternion, {}, Quaternion> {
                 0.25 * s,
                 (y3 + z2) / s,
                 (z1 - x3) / s,
-                silend,
+                silence,
             );
         } else {
             const s = 2.0 * Math.sqrt(1.0 + z3 - x1 - y2);
@@ -213,31 +198,25 @@ export default class Quaternion extends Vector<TQuaternion, {}, Quaternion> {
                 (y3 + z2) / s,
                 0.25 * s,
                 (x2 - y1) / s,
-                silend,
+                silence,
             );
         }
     }
     /**
      * 乘法
-     * @param q 
-     * @returns 
+     * @param q
+     * @returns
      */
     public multiply(q: Quaternion): this {
-        const
-            {
-                x, y, z, w
-            } = this,
-            {
-                x: x1, y: y1, z: z1, w: w1
-            } = q;
+        const { x, y, z, w } = this,
+            { x: x1, y: y1, z: z1, w: w1 } = q;
 
         return this.set(
             w * x1 + x * w1 + y * z1 - z * y1,
             w * y1 - x * z1 + y * w1 + z * x1,
             w * z1 + x * y1 - y * x1 + z * w1,
-            w * w1 - x * x1 - y * y1 - z * z1
+            w * w1 - x * x1 - y * y1 - z * z1,
         );
-
     }
     /**
      * 判断是否相等
@@ -251,7 +230,7 @@ export default class Quaternion extends Vector<TQuaternion, {}, Quaternion> {
     }
     /**
      * 单位四元数
-     * @returns 
+     * @returns
      */
     public identity(): this {
         return this.set(0, 0, 0, 1);
@@ -260,6 +239,7 @@ export default class Quaternion extends Vector<TQuaternion, {}, Quaternion> {
         const [x, y, z, w] = array;
         typeof z === "number" && this.rz.setter(z);
         typeof w === "number" && this.rw.setter(w);
+
         return super.unifySilendSetter(x, y);
     }
 

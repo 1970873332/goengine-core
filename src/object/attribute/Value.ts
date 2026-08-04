@@ -1,4 +1,4 @@
-import CallBackComponent from "@core/component/CallBack";
+import CallBackComponent from "@goengine/core/src/component/CallBack";
 
 /**
  * 值
@@ -10,30 +10,31 @@ export default class Value<T> extends CallBackComponent<
     /**
      * 旧值
      */
-    protected ancient_source?: T;
+    protected _ancient?: T;
 
     constructor(
         /**
          * 值
          */
-        private value_source: T,
+        protected _value: T,
         /**
          * 选项
          */
-        private options?: {
+        protected options?: {
             /**
              * 获取值
-             * @param v 
-             * @returns 
+             * @param v
+             * @returns
              */
-            get?: (v: T) => T,
+            get?: (v: T) => T;
             /**
              * 设置值
-             * @param v 
-             * @returns 
+             * @param v
+             * @returns
              */
-            set?: (nv: T, ov: T) => T
-        }) {
+            set?: (nv: T, ov: T) => T;
+        },
+    ) {
         super();
     }
 
@@ -41,11 +42,10 @@ export default class Value<T> extends CallBackComponent<
      * 值
      */
     public get value(): T {
-        return this.options?.get ? this.options.get(this.value_source) : this.value_source;
+        return this.options?.get ? this.options.get(this._value) : this._value;
     }
     public set value(v: T) {
-        const
-            ov = this.value_source,
+        const ov = this._value,
             nv = this.options?.set ? this.options.set(v, ov) : v;
         if (nv === ov) return;
         this.setter(nv);
@@ -55,25 +55,40 @@ export default class Value<T> extends CallBackComponent<
      * 旧值
      */
     public get ancient(): T | undefined {
-        return this.ancient_source;
+        return this._ancient;
     }
     /**
      * 相同
      */
     public get same(): boolean {
-        return this.ancient_source === this.value_source;
+        return this._ancient === this._value;
     }
 
     /**
      * 设置值
-     * @param v 
+     * @param v
      */
     public setter(v: T): void {
-        this.ancient_source = this.value_source;
-        this.value_source = v;
+        this._ancient = this._value;
+        this._value = v;
+    }
+    /**
+     * 设置值
+     * @param v
+     */
+    public set(v: T): void {
+        this.value = v;
+    }
+    /**
+     * 直接设置值
+     * @param v
+     */
+    public liveset(v: T): void {
+        this.setter(v);
+        this.trigger();
     }
 
     protected execute(callback: Func.RecordCallBack<T>): void {
-        callback(this.value_source, this.ancient_source);
+        callback(this._value, this._ancient);
     }
 }

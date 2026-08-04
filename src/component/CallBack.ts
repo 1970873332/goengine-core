@@ -14,9 +14,9 @@ export default class CallBackComponent<
 
     /**
      * 绑定回调
-     * @param callback 
-     * @param execute 
-     * @returns 
+     * @param callback
+     * @param execute
+     * @returns
      */
     public bindCallback(callback: T, execute?: boolean): this {
         this.callBacks.add(callback);
@@ -25,8 +25,8 @@ export default class CallBackComponent<
     }
     /**
      * 解绑回调
-     * @param callback 
-     * @returns 
+     * @param callback
+     * @returns
      */
     public unbindCallback(callback: T): this {
         this.callBacks.delete(callback);
@@ -40,19 +40,22 @@ export default class CallBackComponent<
     }
     /**
      * 重新绑定回调
-     * @param callback 
-     * @param execute 
-     * @returns 
+     * @param callback
+     * @param execute
+     * @returns
      */
-    public reBindCallback(clear: boolean, callback: T, execute?: boolean): this {
+    public reBindCallback(
+        clear: boolean,
+        callback: T,
+        execute?: boolean,
+    ): this {
         clear ? this.clearCallback() : this.unbindCallback(callback);
         this.bindCallback(callback, execute);
         return this;
-
     }
     /**
      * 触发
-     * @returns 
+     * @returns
      */
     public trigger(): this {
         this.callBacks.forEach((callback) => this.execute(callback));

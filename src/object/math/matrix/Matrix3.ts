@@ -1,15 +1,10 @@
-import { Matrix4 } from "../Index";
 import Matrix from "../Matrix";
+import Matrix4 from "./Matrix4";
 
 /**
  * 3x3矩阵
  */
-export default class Matrix3 extends Matrix<TMatrix3, {}> {
-    /**
-     * 是否是3x3矩阵
-     */
-    public readonly isMatrix3: boolean = true;
-
+export default class Matrix3 extends Matrix<TMatrix3, Matrix3> {
     /**
      * 单位矩阵
      */
@@ -78,13 +73,25 @@ export default class Matrix3 extends Matrix<TMatrix3, {}> {
      * @returns
      */
     public multiply(m: Matrix3): this {
-        const a11 = this.x1, a12 = this.x2, a13 = this.x3;
-        const a21 = this.y1, a22 = this.y2, a23 = this.y3;
-        const a31 = this.z1, a32 = this.z2, a33 = this.z3;
+        const a11 = this.x1,
+            a12 = this.x2,
+            a13 = this.x3;
+        const a21 = this.y1,
+            a22 = this.y2,
+            a23 = this.y3;
+        const a31 = this.z1,
+            a32 = this.z2,
+            a33 = this.z3;
 
-        const b11 = m.x1, b12 = m.x2, b13 = m.x3;
-        const b21 = m.y1, b22 = m.y2, b23 = m.y3;
-        const b31 = m.z1, b32 = m.z2, b33 = m.z3;
+        const b11 = m.x1,
+            b12 = m.x2,
+            b13 = m.x3;
+        const b21 = m.y1,
+            b22 = m.y2,
+            b23 = m.y3;
+        const b31 = m.z1,
+            b32 = m.z2,
+            b33 = m.z3;
 
         return this.set([
             a11 * b11 + a12 * b21 + a13 * b31,

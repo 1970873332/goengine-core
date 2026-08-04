@@ -2,11 +2,9 @@ import { md5 } from "js-md5";
 import { EventTarget } from "../supplement/Event";
 
 /**
- * 状态组件
+ * 身份组件
  */
-export default class IdentityComponent<
-    E extends {},
-> extends EventTarget<E> {
+export default class IdentityComponent<E extends {}> extends EventTarget<E> {
     constructor(char?: string, unverifiedID?: string) {
         super();
         this.char = char ?? this.char;
@@ -16,7 +14,7 @@ export default class IdentityComponent<
     /**
      * id
      */
-    public declare id: string;
+    declare public id: string;
     /**
      * 原始字符
      */

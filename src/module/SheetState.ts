@@ -9,15 +9,12 @@ import {
     Row,
     Worksheet,
 } from "exceljs";
-import { Vector4 } from "../object/math/Index";
 import { ArrayUtils } from "../util/Array";
 
 /**
  * 表格状态
  */
-export default class SheetState<
-    E extends Record<any, unknown> = Record<any, unknown>,
-> {
+export default class SheetState<E extends Record<Iteration, unknown>> {
     /**
      * 格式化值
      * @param value
@@ -65,8 +62,8 @@ export default class SheetState<
      * 从表格获取状态
      * @param values
      */
-    public static fromSheet(worksheet: Worksheet, use_head?: boolean): SheetState {
-        const state: SheetState = new SheetState();
+    public static fromSheet(worksheet: Worksheet, use_head?: boolean): IAny {
+        const state = new SheetState();
         state.bindSheet(worksheet, use_head ? [] : void 0);
         return state;
     }
@@ -83,11 +80,10 @@ export default class SheetState<
      * 是否有表头
      */
     public readonly useHead: boolean = false;
-
     /**
      * 当前行
      */
-    protected index_source: number = 0;
+    protected _index: number = 0;
 
     /**
      * 获取当前行
@@ -120,15 +116,15 @@ export default class SheetState<
      * 当前行索引
      */
     public get index(): number {
-        return this.index_source;
+        return this._index;
     }
     protected set index(value: number) {
-        this.index_source = value;
+        this._index = value;
     }
 
     /**
      * 数据管道
-     * @returns 
+     * @returns
      */
     protected *pipeline(): Generator<Row, void, void> {
         if (!this.sheet) return;
@@ -139,8 +135,8 @@ export default class SheetState<
     }
     /**
      * 从表头获取位置,如果没有找到则返回name
-     * @param name 
-     * @returns 
+     * @param name
+     * @returns
      */
     public locationFromHead(name: keyof E & string): string | number {
         const list: CellValue[] = ArrayUtils.normalize(this.head?.values);
@@ -152,8 +148,8 @@ export default class SheetState<
     }
     /**
      * 从表头获取位置,如果没有找到则返回表头单元格数量
-     * @param name 
-     * @returns 
+     * @param name
+     * @returns
      */
     public locationFromHeadFormat(name: keyof E & string): number {
         const location: string | number = this.locationFromHead(name);
@@ -161,10 +157,10 @@ export default class SheetState<
     }
     /**
      * 根据表头链接单元格数据
-     * @param name 
-     * @param format 
+     * @param name
+     * @param format
      * @throws
-     * @returns 
+     * @returns
      */
     public cellValueOfRowLinkHead(
         name: keyof E & string,
@@ -183,8 +179,8 @@ export default class SheetState<
     }
     /**
      * 绑定工作表
-     * @param sheet 
-     * @param head 
+     * @param sheet
+     * @param head
      */
     public bindSheet(sheet: Worksheet | undefined, head?: string[]): void {
         Object.assign(this, {
@@ -199,11 +195,11 @@ export default class SheetState<
     }
     /**
      * 设置单元格
-     * @param value 
-     * @param index 
-     * @param row 
+     * @param value
+     * @param index
+     * @param row
      * @throws
-     * @returns 
+     * @returns
      */
     public setCell(
         value: CellValue,
@@ -231,10 +227,13 @@ export default class SheetState<
     }
     /**
      * 添加图片
-     * @param id 
-     * @param value 
+     * @param id
+     * @param value
      */
-    public addImage(id: number, value: Vector4): void {
+    public addImage(
+        id: number,
+        value: { x: number; y: number; width: number; height: number },
+    ): void {
         const { x, y, width, height } = value,
             w: number = Math.max(
                 this.sheet?.properties.defaultColWidth ?? 70,
@@ -248,8 +247,8 @@ export default class SheetState<
     }
     /**
      * 获取所有行
-     * @param excludeHead 
-     * @returns 
+     * @param excludeHead
+     * @returns
      */
     public toArray(excludeHead?: boolean): CellValue[][] {
         const start: number = ~~!!(excludeHead && this.useHead) + 1,
@@ -262,8 +261,8 @@ export default class SheetState<
     }
     /**
      * 替换行
-     * @param start 
-     * @param rows 
+     * @param start
+     * @param rows
      * @throws
      */
     public replaceRows(start: number, rows: CellValue[][]): void {
@@ -286,3 +285,7 @@ export default class SheetState<
         } as Partial<this>);
     }
 }
+
+type IAny = SheetState<any>;
+
+export { IAny as SheetStateAny };

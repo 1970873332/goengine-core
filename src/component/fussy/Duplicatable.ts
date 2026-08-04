@@ -12,15 +12,26 @@ export default abstract class DuplicatableComponent<
      * @returns
      */
     public clone(): this {
-        throw new Error("未实现clone");
+        const Constructor = this.constructor as new (...args: any[]) => this;
+        return (new Constructor() as this).copy(this, true);
     }
     /**
      * 复制
-     * @param target
-     * @param silend
+     * @param target 目标
+     * @param silence 静默
      */
-    public copy(target: this): this {
-        throw new Error("未实现copy");
+    public copy(target: this, silence?: boolean): this {
+        !silence && this.trigger();
+        return this;
+    }
+    /**
+     * 复制
+     * @param target 目标
+     */
+    public liveCopy(target: this): this {
+        this.copy(target, true);
+        this.trigger();
+        return this;
     }
     /**
      * 转换为JSON
@@ -30,7 +41,7 @@ export default abstract class DuplicatableComponent<
         return {
             uuid: this.uuid,
             type: this.constructor.name,
-        }
+        };
     }
     /**
      * 转换为字符串
@@ -40,11 +51,13 @@ export default abstract class DuplicatableComponent<
     }
 }
 
-interface ISaveJSON extends Partial<Pick<DuplicatableComponent<any, any>, "uuid">> {
+interface ISaveJSON extends Partial<Pick<IAny, "uuid">> {
     /**
      * 类型
      */
     type: string;
 }
 
-export { ISaveJSON as DuplicatableSaveJSON }
+type IAny = DuplicatableComponent<any, any>;
+
+export { IAny as DuplicatableComponentAny, ISaveJSON as DuplicatableSaveJSON };

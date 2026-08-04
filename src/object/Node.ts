@@ -1,11 +1,12 @@
-import DuplicatableComponent, { DuplicatableSaveJSON } from "@core/component/fussy/Duplicatable";
-import { TaskComponentEvent } from "@core/component/Task";
-import MessageQueueManager, { MessageQueueManagerEvent } from "@core/manager/MessageQueue";
-import { Matrix4, Quaternion, Vector3 } from "@core/object/math/Index";
-import Euler, { EulerType } from "@core/object/math/transfrom/Euler";
-import { Vector3Type } from "@core/object/math/vector/Vector3";
-import { ArrayUtils } from "@core/util/Array";
-import Value from "./attribute/Value";
+import DuplicatableComponent from "@goengine/core/src/component/fussy/Duplicatable";
+import { TaskComponentEvent } from "@goengine/core/src/component/Task";
+import MessageQueueManager, {
+    MessageQueueManagerEvent,
+} from "@goengine/core/src/manager/MessageQueue";
+import Euler from "@goengine/core/src/object/math/transfrom/Euler";
+import Matrix4 from "./math/matrix/Matrix4";
+import Quaternion from "./math/transfrom/Quaternion";
+import Vector3 from "./math/vector/Vector3";
 
 /**
  * 基础节点
@@ -13,13 +14,8 @@ import Value from "./attribute/Value";
 export default abstract class BaseNode<
     C extends IConfig,
     E extends IEvent,
-    T extends BaseNode<C, E, T>
-> extends DuplicatableComponent<Func.CallBack<BaseNode<C, E, T>>, E> {
-    /**
-     * 是否是节点
-     */
-    public readonly isNode: boolean = true;
-
+    T extends BaseNode<any, any, T>,
+> extends DuplicatableComponent<Func.CallBack<T>, E> {
     /**
      * 父节点
      */
@@ -34,23 +30,21 @@ export default abstract class BaseNode<
      */
     public instruct: boolean = false;
     /**
-     * 受控
-     */
-    public controlled: boolean = true;
-    /**
      * 是否禁用辅助
      */
     public disableHelper: boolean = true;
     /**
+     * 是否可见
+     */
+    public visible: boolean = true;
+    /**
+     * 受控
+     */
+    public controlled: boolean = true;
+    /**
      * 子项
      */
     public readonly children = new Map<string, T>();
-    /**
-     * 是否可见
-     */
-    public readonly visible = new Value<boolean>(
-        true,
-    ).bindCallback(this.visibleCallback.bind(this));
     /**
      * 锚点
      */
@@ -64,16 +58,16 @@ export default abstract class BaseNode<
         this.scaleCallback.bind(this),
     );
     /**
-     * 位置
-     */
-    public readonly position = Vector3.zero().bindCallback(
-        this.positionCallback.bind(this),
-    );
-    /**
      * 旋转
      */
     public readonly rotation = Euler.zero().bindCallback(
         this.rotationCallback.bind(this),
+    );
+    /**
+     * 位置
+     */
+    public readonly position = Vector3.zero().bindCallback(
+        this.positionCallback.bind(this),
     );
     /**
      * 四元数
@@ -94,43 +88,25 @@ export default abstract class BaseNode<
      */
     public readonly worldScale = Vector3.one();
     /**
-     * 世界位置
-     */
-    public readonly worldPosition = Vector3.zero();
-    /**
      * 世界旋转
      */
     public readonly worldRotation = Euler.zero();
+    /**
+     * 世界位置
+     */
+    public readonly worldPosition = Vector3.zero();
     /**
      * 世界四元数
      */
     public readonly worldQuaternion = Quaternion.identity();
 
     /**
-     * 更新矩阵
-     * @returns
+     * 是否接受事件
      */
-    public updateMatrix(): void {
-        this.matrix.copy(
-            Matrix4.compose(this.position, this.quaternion, this.scale)
-        );
-        this.updateWorldMatrix();
+    public get pointEvent(): boolean {
+        return this.visible && this.controlled;
     }
-    /**
-     * 更新世界矩阵
-     */
-    public updateWorldMatrix(): void {
-        if (this.parent) {
-            this.worldMatrix.copy(this.parent.worldMatrix).multiply(this.matrix);
-        } else this.worldMatrix.copy(this.matrix);
 
-        this.worldScale.fromMatrix(this.worldMatrix, "scale");
-        this.worldPosition.fromMatrix(this.worldMatrix, "position");
-        this.worldRotation.fromMatrix(this.worldMatrix);
-        this.worldQuaternion.fromMatrix(this.worldMatrix);
-
-        this.children.forEach((child) => child.updateWorldMatrix());
-    }
     /**
      * 设置配置
      * @param config
@@ -142,25 +118,60 @@ export default abstract class BaseNode<
             position,
             rotation,
 
+            visible = this.visible,
+            instruct = this.instruct,
+            controlled = this.controlled,
+            disableHelper = this.disableHelper,
+        } = config;
+
+        Object.assign(this, {
+            visible,
             instruct,
             controlled,
             disableHelper,
+        });
 
-            visible,
-        } = config;
-        scale && this.scale.copy(scale, true);
-        anchor && this.anchor.copy(anchor, true);
-        position && this.position.copy(position, true);
-        rotation && this.rotation.copy(rotation, true);
+        scale && this.scale.set(scale.x, scale.y, scale.z, true);
+        anchor && this.anchor.set(anchor.x, anchor.y, anchor.z, true);
+        position && this.position.set(position.x, position.y, position.z, true);
+        rotation &&
+            (this.rotation.set(
+                rotation.x,
+                rotation.y,
+                rotation.z,
+                this.rotation.order,
+                true,
+            ),
+            this.quaternion.fromEuler(this.rotation, true));
 
-        this.instruct = instruct ?? this.instruct;
-        this.controlled = controlled ?? this.controlled;
-        this.disableHelper = disableHelper ?? this.disableHelper;
-
-        this.visible.setter(visible ?? this.visible.value);
-
-        this.quaternion.fromEuler(this.rotation, true);
         this.updateMatrix();
+    }
+    /**
+     * 更新矩阵
+     * @returns
+     */
+    public updateMatrix(): void {
+        this.matrix.copy(
+            Matrix4.compose(this.position, this.quaternion, this.scale),
+        );
+        this.updateWorldMatrix();
+    }
+    /**
+     * 更新世界矩阵
+     */
+    public updateWorldMatrix(): void {
+        if (this.parent) {
+            this.worldMatrix
+                .copy(this.parent.worldMatrix)
+                .multiply(this.matrix);
+        } else this.worldMatrix.copy(this.matrix);
+
+        this.worldScale.fromMatrix(this.worldMatrix, "scale");
+        this.worldPosition.fromMatrix(this.worldMatrix, "position");
+        this.worldRotation.fromMatrix(this.worldMatrix);
+        this.worldQuaternion.fromMatrix(this.worldMatrix);
+
+        this.children.forEach((child) => child.updateWorldMatrix());
     }
     /**
      * 绑定父节点
@@ -168,8 +179,7 @@ export default abstract class BaseNode<
      */
     public bindParent(parent: T): this {
         this.parent = parent;
-        parent.messageQueue &&
-            this.bindMessageQueue(parent.messageQueue);
+        parent.messageQueue && this.bindMessageQueue(parent.messageQueue);
         this.updateWorldMatrix();
         return this;
     }
@@ -238,17 +248,11 @@ export default abstract class BaseNode<
         this.updateMatrix();
     }
     /**
-     * 可见回调
-     */
-    protected visibleCallback(): void {
-        this.addMessageQueue({ visible: this.visible.value });
-    }
-    /**
      * 添加子项
      * @param node
      */
     public add(...nodes: T[]): this {
-        nodes.forEach((item: T) => {
+        nodes.forEach((item) => {
             item.bindParent(this as unknown as T);
             this.children.set(item.uuid, item);
         });
@@ -257,64 +261,31 @@ export default abstract class BaseNode<
     /**
      * 移除子项
      * @param node
-     * @param destory
+     * @param destroy
      */
-    public remove(node: T, destory?: boolean): this {
+    public remove(node: T, destroy?: boolean): this {
         node.unbindParent();
         this.children.delete(node.uuid);
-        destory && node.destroy();
+        destroy && node.destroy();
         return this;
-    }
-    /**
-     * 转换本地坐标为世界位置
-     * @param v
-     * @returns
-     */
-    public transLocalToWorldPosition(v: Vector3): Vector3 {
-        return this.worldPosition.add(v);
-    }
-    /**
-     * 转换世界坐标为本地位置
-     * @param v
-     * @returns
-     */
-    public transWorldToLocalPosition(v: Vector3): Vector3 {
-        return v.clone().sub(this.worldPosition);
-    }
-    /**
-     * 遍历子项
-     * @param callback
-     */
-    public traverse(callback: (node: T) => void): void {
-        ArrayUtils.traverse(this.children, callback);
     }
     /**
      * 添加消息队列
      */
     public addMessageQueue(
-        data: Record<any, unknown>,
+        data: Record<Iteration, unknown>,
         type: MessageQueueManagerEvent = MessageQueueManagerEvent.NodeInfo,
     ): void {
         !this.controlled &&
             this.messageQueue?.add(type, { id: this.uuid, ...data });
     }
     /**
-     * 获取节点
-     * @param id
-     * @returns
-     */
-    public getNodeByID(id: string): T | undefined {
-        let node: T | undefined = this.children.get(id);
-        !node && this.traverse((item) => item.uuid === id && (node = item));
-        return node;
-    }
-    /**
      * 清理
-     * @param destory
+     * @param destroy
      */
-    public clear(destory?: boolean): void {
-        this.children.forEach((item: T) =>
-            destory ? item.destroy() : item.unbindParent(),
+    public clear(destroy?: boolean): void {
+        this.children.forEach((item) =>
+            destroy ? item.destroy() : item.unbindParent(),
         );
         this.children.clear();
     }
@@ -330,38 +301,7 @@ export default abstract class BaseNode<
         callback(this);
     }
 
-    public toJSON(): ISaveJSON {
-        const children: string[] = [];
-        this.children.forEach((item) => children.push(item.uuid));
-        return {
-            ...super.toJSON(),
-
-            children: children,
-
-            scale: this.scale.toArray(),
-            anchor: this.anchor.toArray(),
-            position: this.position.toArray(),
-            rotation: this.rotation.toArray(),
-
-            instruct: this.instruct,
-            controlled: this.controlled,
-            disableHelper: this.disableHelper,
-
-            visible: this.visible.value,
-        };
-    }
-
-    public reInit(): void {
-        this.scale.reBindCallback(true, this.scaleCallback.bind(this));
-        this.anchor.reBindCallback(true, this.anchorCallback.bind(this));
-        this.position.reBindCallback(true, this.positionCallback.bind(this));
-        this.rotation.reBindCallback(true, this.rotationCallback.bind(this));
-        this.quaternion.reBindCallback(true, this.quaternionCallback.bind(this));
-
-        this.visible.reBindCallback(true, this.visibleCallback.bind(this));
-    }
-
-    public copy(target: this): this {
+    public copy(target: this, silence?: boolean): this {
         const {
             scale,
             anchor,
@@ -372,12 +312,18 @@ export default abstract class BaseNode<
             matrix,
             worldMatrix,
 
+            visible,
             instruct,
             controlled,
             disableHelper,
-
-            visible,
         } = target;
+
+        Object.assign(this, {
+            visible,
+            instruct,
+            controlled,
+            disableHelper,
+        });
 
         this.scale.copy(scale, true);
         this.anchor.copy(anchor, true);
@@ -388,71 +334,37 @@ export default abstract class BaseNode<
         this.matrix.copy(matrix, true);
         this.worldMatrix.copy(worldMatrix, true);
 
-        Object.assign(this, {
-            instruct,
-            controlled,
-            disableHelper
-        });
-
-        this.visible.setter(visible.value);
-
-        return this;
+        return super.copy(target, silence);
     }
 }
 
 interface IConfig extends Partial<
-    Pick<
-        BaseNode<any, any, any>,
-        | "scale"
-        | "anchor"
-        | "position"
-        | "rotation"
-
-        | "instruct"
-        | "controlled"
-        | "disableHelper"
-    >
+    Pick<IAny, "visible" | "instruct" | "controlled" | "disableHelper">
 > {
-    /**
-     * 是否可见
-     */
-    visible?: boolean;
-}
-
-interface ISaveJSON extends DuplicatableSaveJSON, Partial<
-    Pick<BaseNode<any, any, any>, "instruct" | "controlled" | "disableHelper">
-> {
-    /**
-     * 子项
-     */
-    children: string[];
     /**
      * 锚点
-    */
-    anchor: Vector3Type;
+     */
+    anchor?: Partial<VectorObject.Vector3>;
     /**
      * 缩放
-    */
-    scale: Vector3Type;
+     */
+    scale?: Partial<VectorObject.Vector3>;
     /**
      * 位置
      */
-    position: Vector3Type;
+    position?: Partial<VectorObject.Vector3>;
     /**
      * 旋转
      */
-    rotation: EulerType;
-    /**
-     * 是否可见
-     */
-    visible: boolean;
+    rotation?: Partial<VectorObject.Vector3>;
 }
 
-interface IEvent extends TaskComponentEvent { }
+interface IEvent extends TaskComponentEvent {}
+
+type IAny = BaseNode<any, any, IAny>;
 
 export {
+    IAny as BaseNodeAny,
     IConfig as BaseNodeConfig,
     IEvent as BaseNodeEvent,
-    ISaveJSON as BaseNodeSaveJSON
 };
-

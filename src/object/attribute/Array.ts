@@ -1,14 +1,11 @@
-import DuplicatableComponent from "@core/component/fussy/Duplicatable";
+import DuplicatableComponent from "@goengine/core/src/component/fussy/Duplicatable";
 
 /**
  * 数组属性
  */
 export default class ArrayAttribute<
     T extends TSource,
-> extends DuplicatableComponent<
-    Func.CallBack<ArrayAttribute<T>>,
-    {}
-> {
+> extends DuplicatableComponent<Func.CallBack<ArrayAttribute<T>>, {}> {
     /**
      * @param array 数组
      * @param size 尺寸
@@ -31,9 +28,15 @@ export default class ArrayAttribute<
         return new ArrayAttribute<T>(this.array, this.size) as this;
     }
 
-    public copy(target: this): this {
-        this.array = target.array;
-        this.size = target.size;
+    public copy(target: this, silence?: boolean): this {
+        const { size, array } = target;
+
+        Object.assign(this, {
+            size,
+            array,
+        });
+
+        !silence && this.trigger();
         return this;
     }
 

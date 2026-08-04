@@ -1,39 +1,27 @@
-import DuplicatableComponent from "@core/component/fussy/Duplicatable";
-import { PolyUtils } from "@core/util/Poly";
+import DuplicatableComponent from "@goengine/core/src/component/fussy/Duplicatable";
+import { PolyUtils } from "@goengine/core/src/util/Poly";
 import Value from "../attribute/Value";
 
 /**
  * 向量
  */
 export default abstract class Vector<
-    T extends any[],
-    E extends {},
-    B
-> extends DuplicatableComponent<Func.CallBack<B>, E> {
-    /**
-     * 是否是向量
-     */
-    public readonly isVertor: boolean = true;
-
+    T extends Iteration[],
+    B extends Vector<T, B>,
+> extends DuplicatableComponent<Func.CallBack<B>, {}> {
     constructor(x?: Poly.resolveFunc<number>, y?: Poly.resolveFunc<number>) {
         super();
         this.reckSilendSetter(this.rx, x);
         this.reckSilendSetter(this.ry, y);
     }
 
-    public readonly rx = new Value<number>(
-        0,
-        {
-            set: (nv) => this.safety(nv)
-        }
-    ).bindCallback(this.trigger.bind(this));
+    public readonly rx = new Value<number>(0, {
+        set: (nv) => this.safety(nv),
+    }).bindCallback(this.trigger.bind(this));
 
-    public readonly ry = new Value<number>(
-        0,
-        {
-            set: (nv) => this.safety(nv)
-        }
-    ).bindCallback(this.trigger.bind(this));
+    public readonly ry = new Value<number>(0, {
+        set: (nv) => this.safety(nv),
+    }).bindCallback(this.trigger.bind(this));
 
     public get x(): number {
         return this.rx.value;
@@ -70,16 +58,16 @@ export default abstract class Vector<
 
     /**
      * 设置X
-     * @param v 
-     * @returns 
+     * @param v
+     * @returns
      */
     public setX(v: number): void {
         this.x = v;
     }
     /**
      * 设置Y
-     * @param v 
-     * @returns 
+     * @param v
+     * @returns
      */
     public setY(v: number): void {
         this.y = v;
@@ -95,7 +83,7 @@ export default abstract class Vector<
     /**
      * 映射
      * @param formatter
-     * @param silend
+     * @param silence 静默
      * @returns
      */
     public map(...formatters: Array<(v: T[number]) => T[number]>): this {
@@ -119,9 +107,9 @@ export default abstract class Vector<
      * 整合设置
      * @param array
      */
-    protected unifySetter(silend?: boolean, ...array: unknown[]): this {
+    protected unifySetter(silence?: boolean, ...array: unknown[]): this {
         this.unifySilendSetter(...array);
-        !silend && !this.same && this.trigger();
+        !silence && !this.same && this.trigger();
         return this;
     }
     /**
@@ -143,6 +131,19 @@ export default abstract class Vector<
     public toArray(): T {
         throw new Error("未实现toArray");
     }
+    /**
+     * 判断是否有效
+     * @returns
+     */
+    public valid(): boolean {
+        return !!this.x && !!this.y;
+    }
+    /**
+     * 格式化
+     */
+    public format(callback: (v: T[number]) => T[number]): this {
+        return this.unifySetter(true, ...this.toArray().map(callback));
+    }
 
     protected execute(callback: Func.CallBack<B>): void {
         callback(this as unknown as B);
@@ -152,8 +153,9 @@ export default abstract class Vector<
         return new (this.constructor as any)().copy(this);
     }
 
-    public copy(target: this, silend?: boolean): this {
-        this.unifySetter(silend, ...target.toArray());
-        return this;
+    public copy(target: this, silence?: boolean): this {
+        this.unifySetter(true, ...target.toArray());
+
+        return super.copy(target, silence);
     }
 }

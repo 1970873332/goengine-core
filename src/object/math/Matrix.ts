@@ -1,32 +1,27 @@
-import DuplicatableComponent from "@core/component/fussy/Duplicatable";
+import DuplicatableComponent from "@goengine/core/src/component/fussy/Duplicatable";
 
 /**
  * 矩阵
  */
 export default abstract class Matrix<
     T extends number[],
-    E extends {},
-> extends DuplicatableComponent<Func.CallBack<Matrix<T, E>>, E> {
-    /**
-     * 是否是矩阵
-     */
-    public readonly isMatrix: boolean = true;
-
+    B extends Matrix<T, B>,
+> extends DuplicatableComponent<Func.CallBack<B>, {}> {
     /**
      * 矩阵
      */
-    public declare m: T;
+    declare public m: T;
 
     /**
      * 设置
      * @param array
-     * @param silend
+     * @param silence 静默
      * @returns
      */
-    public set(array: T, silend?: boolean): this {
+    public set(array: T, silence?: boolean): this {
         const same: boolean = array.toString() === this.m.toString();
         this.m = array;
-        !silend && !same && this.trigger();
+        !silence && !same && this.trigger();
         return this;
     }
     /**
@@ -44,11 +39,13 @@ export default abstract class Matrix<
         throw new Error("未实现identity");
     }
 
-    protected execute(callback: Func.CallBack<Matrix<T, E>>): void {
-        callback(this);
+    protected execute(callback: Func.CallBack<B>): void {
+        callback(this as unknown as B);
     }
 
-    public copy(target: this, silend?: boolean): this {
-        return this.set(target.toArray(), silend);
+    public copy(target: this, silence?: boolean): this {
+        this.set(target.toArray(), true);
+
+        return super.copy(target, silence);
     }
 }

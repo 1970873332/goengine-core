@@ -1,47 +1,119 @@
-import Value from "@core/object/attribute/Value";
-import { Euler, Matrix4, Vector2, Vector4 } from "../Index";
-import { EulerOrder } from "../transfrom/Euler";
+import Value from "@goengine/core/src/object/attribute/Value";
+import Matrix4 from "../matrix/Matrix4";
+import Euler, { EulerOrder } from "../transfrom/Euler";
 import Vector from "../Vector";
+import Vector2 from "./Vector2";
+import Vector4 from "./Vector4";
 
 /**
  * 三维向量
  */
-export default class Vector3 extends Vector<TVector3, {}, Vector3> {
+export default class Vector3 extends Vector<TArray, Vector3> {
     /**
-     * 是否是三维向量
+     * 创建一个X向量
+     * @param v
+     * @returns
      */
-    public readonly isVertor3: boolean = true;
-
+    public static fromX(v?: number): Vector3 {
+        return new Vector3(v);
+    }
+    /**
+     * 创建一个Y向量
+     * @param v
+     * @returns
+     */
+    public static fromY(v?: number): Vector3 {
+        return new Vector3(0, v);
+    }
+    /**
+     * 创建一个Z向量
+     * @param v
+     * @returns
+     */
+    public static fromZ(v?: number): Vector3 {
+        return new Vector3(0, 0, v);
+    }
+    /**
+     * 创建一个标量向量
+     * @param v
+     * @returns
+     */
+    public static fromScalar(v?: number): Vector3 {
+        return new Vector3(v, v, v);
+    }
     /**
      * 数组转为Vector3
      * @param arr
      * @returns
      */
-    public static fromArray(arr?: Partial<TVector3>): Vector3 {
+    public static fromArray(arr?: Partial<TArray>): Vector3 {
         const [v1, v2, v3] = arr ?? [];
         return new Vector3(v1, v2, v3);
     }
     /**
+     * 从对象创建
+     * @param obj
+     * @returns
+     */
+    public static fromObject(obj: VectorAttr.Vector3): Vector3 {
+        const {
+            x,
+            y,
+            z,
+
+            width,
+            height,
+            depth,
+
+            r,
+            g,
+            b,
+        } = obj;
+
+        return new Vector3(x ?? width ?? r, y ?? height ?? g, z ?? depth ?? b);
+    }
+    /**
      * 数组转为Vector3
      * @param arr
      * @returns
      */
-    public static fromArrays(arr?: Partial<TVector3>[]): Vector3[] {
+    public static fromArrays(arr?: Partial<TArray>[]): Vector3[] {
         return arr?.map((v) => Vector3.fromArray(v)) ?? [];
     }
     /**
      * 创建一个零向量
-     * @returns 
+     * @returns
      */
     public static zero(): Vector3 {
-        return new Vector3();
+        return new Vector3(0, 0, 0);
     }
     /**
      * 创建一个单位向量
-     * @returns 
+     * @returns
      */
     public static one(): Vector3 {
         return new Vector3(1, 1, 1);
+    }
+    /**
+     * 创建一个x轴向量
+     * @returns
+     */
+    public static xAxis(): Vector3 {
+        return Vector3.fromX(1);
+    }
+    /**
+     * 创建一个y轴向量
+     * @returns
+     */
+    public static yAxis(): Vector3 {
+        return Vector3.fromY(1);
+    }
+    /**
+     * 创建一个z轴向量
+     * @returns
+     */
+    public static zAxis(): Vector3 {
+        return Vector3.fromZ(1);
     }
 
     constructor(
@@ -53,12 +125,9 @@ export default class Vector3 extends Vector<TVector3, {}, Vector3> {
         this.reckSilendSetter(this.rz, z);
     }
 
-    public readonly rz = new Value<number>(
-        0,
-        {
-            set: (nv) => this.safety(nv)
-        }
-    ).bindCallback(this.trigger.bind(this));
+    public readonly rz = new Value<number>(0, {
+        set: (nv) => this.safety(nv),
+    }).bindCallback(this.trigger.bind(this));
 
     public get z(): number {
         return this.rz.value;
@@ -131,8 +200,8 @@ export default class Vector3 extends Vector<TVector3, {}, Vector3> {
 
     /**
      * 设置Z
-     * @param v 
-     * @returns 
+     * @param v
+     * @returns
      */
     public setZ(v: number): void {
         this.z = v;
@@ -142,11 +211,31 @@ export default class Vector3 extends Vector<TVector3, {}, Vector3> {
      * @param x
      * @param y
      * @param z
-     * @param silend
+     * @param silence 静默
      * @returns
      */
-    public set(x: number, y: number, z: number, silend?: boolean): this {
-        return this.unifySetter(silend, x, y, z);
+    public set(x?: number, y?: number, z?: number, silence?: boolean): this {
+        return this.unifySetter(silence, x, y, z);
+    }
+    /**
+     * 设置为标量
+     * @param v
+     * @param silence
+     * @returns
+     */
+    public setScalar(v?: number, silence?: boolean): this {
+        return this.set(v, v, v, silence);
+    }
+    /**
+     * 设置
+     * @param x
+     * @param y
+     * @param z
+     * @returns
+     */
+    public liveset(x?: number, y?: number, z?: number): this {
+        this.unifySetter(true, x, y, z);
+        return this.trigger();
     }
     /**
      * Matrix转为Vector3
@@ -155,12 +244,8 @@ export default class Vector3 extends Vector<TVector3, {}, Vector3> {
      * @returns
      */
     public fromMatrix(m: Matrix4, type: "position" | "scale"): this {
-        const {
-            x1, x2, x3, x4,
-            y1, y2, y3, y4,
-            z1, z2, z3, z4,
-            w1, w2, w3
-        } = m;
+        const { x1, x2, x3, x4, y1, y2, y3, y4, z1, z2, z3, z4, w1, w2, w3 } =
+            m;
         switch (type) {
             case "position":
                 return this.set(x4, y4, z4);
@@ -168,7 +253,7 @@ export default class Vector3 extends Vector<TVector3, {}, Vector3> {
                 return this.set(
                     Math.sqrt(x1 ** 2 + y1 ** 2 + z1 ** 2 + w1 ** 2),
                     Math.sqrt(x2 ** 2 + y2 ** 2 + z2 ** 2 + w2 ** 2),
-                    Math.sqrt(x3 ** 2 + y3 ** 2 + z3 ** 2 + w3 ** 2)
+                    Math.sqrt(x3 ** 2 + y3 ** 2 + z3 ** 2 + w3 ** 2),
                 );
             default:
                 return this;
@@ -351,7 +436,7 @@ export default class Vector3 extends Vector<TVector3, {}, Vector3> {
      * @param vectors
      * @returns
      */
-    public toVector2(names: TSelect = ["x", "y"]): Vector2 {
+    public toVector2(names: TDownArray = ["x", "y"]): Vector2 {
         const [n1, n2] = names;
         return new Vector2(this[n1], this[n2]);
     }
@@ -377,46 +462,50 @@ export default class Vector3 extends Vector<TVector3, {}, Vector3> {
      */
     public applyMatrix4(m: Matrix4): this {
         const { x, y, z } = this,
-            {
-                x1, x2, x3, x4,
-                y1, y2, y3, y4,
-                z1, z2, z3, z4,
-            } = m;
+            { x1, x2, x3, x4, y1, y2, y3, y4, z1, z2, z3, z4 } = m;
 
         return this.set(
             x * x1 + y * x2 + z * x3 + x4,
             x * y1 + y * y2 + z * y3 + y4,
-            x * z1 + y * z2 + z * z3 + z4
+            x * z1 + y * z2 + z * z3 + z4,
         );
     }
     /**
      * 设置为零向量
-     * @returns 
+     * @returns
      */
     public zero(): this {
         return this.set(0, 0, 0);
     }
     /**
      * 设置为单位向量
-     * @returns 
+     * @returns
      */
     public one(): this {
         return this.set(1, 1, 1);
+    }
+    /**
+     * 判断是否有效
+     * @returns
+     */
+    public valid(): boolean {
+        return super.valid() && !!this.z;
     }
 
     protected unifySilendSetter(...array: unknown[]): this {
         const [x, y, z] = array;
         typeof z === "number" && this.rz.setter(z);
+
         return super.unifySilendSetter(x, y);
     }
 
-    public toArray(): TVector3 {
+    public toArray(): TArray {
         return [this.x, this.y, this.z];
     }
 }
 
-type TVector3 = [number, number, number];
-type TSelect<T = "x" | "y" | "z"> = [T, T];
+type TArray = [number, number, number];
 
-export { TSelect as Vector2Select, TVector3 as Vector3Type };
+type TDownArray<T = "x" | "y" | "z"> = [T, T];
 
+export { TArray as Vector3Array };

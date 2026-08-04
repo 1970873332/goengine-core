@@ -4,6 +4,8 @@
 export abstract class TimeUtils {
     /**
      * 标准化时间格式
+     * @param date Date
+     * @returns
      */
     public static normal(date: Date = new Date()): string {
         const year = date.getFullYear(),
@@ -12,6 +14,6 @@ export abstract class TimeUtils {
             hours = String(date.getHours()).padStart(2, "0"),
             minutes = String(date.getMinutes()).padStart(2, "0"),
             seconds = String(date.getSeconds()).padStart(2, "0");
-        return `${year}-${month}-${day}-${hours}${minutes}${seconds}`;
+        return `${year}-${month}-${day}/${hours}:${minutes}:${seconds}`;
     }
 }

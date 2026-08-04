@@ -2,23 +2,18 @@ import { MathUtils } from "./Math";
 import { ObjectUtils } from "./Object";
 
 /**
- * 数组工具
+ * 数组工具类
  */
 export abstract class ArrayUtils {
     /**
      * 深度遍历
-     * @param array
-     * @param callback
-     * @param filter
+     * @param array 数组
+     * @param callback 返回true时中断遍历，返回false时跳过子项继续遍历
      * @returns
      */
-    public static traverse<T extends IIdentityGroup<T>>(
-        array: TGroupCollection<T>,
-        callback: (
-            value: T,
-            index: number,
-            array: TGroupCollection<T>,
-        ) => boolean | void,
+    public static traverse<T extends IItem<T>>(
+        array: TGroup<T>,
+        callback: (value: T, index: number, array: TGroup<T>) => boolean | void,
     ): void {
         const list: T[] = this.normalize(array);
         for (let index = 0; index < list.length; index++) {
@@ -32,51 +27,14 @@ export abstract class ArrayUtils {
         }
     }
     /**
-     * 深度过滤
-     * @param item 过滤对象
-     * @param selects 存有过滤id组
-     * @param del 是否删除
-     * @param peers 过滤组
-     * @returns
-     */
-    public static traverseFilter<T extends IIdentityGroup<T>>(
-        item: T,
-        selects: string[],
-        del: boolean,
-        peers?: TGroupCollection<T>,
-    ): string[] {
-        const set: Set<string> = new Set(selects);
-        item.id && (del ? set.delete(item.id) : set.add(item.id));
-        Array.isArray(peers) &&
-            this.traverse(
-                peers,
-                (smallItem: T, _, array: TGroupCollection<T>) => {
-                    if (smallItem.id == item.id) {
-                        this.normalize(array).forEach(
-                            (smallSmallItem) =>
-                                smallSmallItem.id &&
-                                smallSmallItem.id != item.id &&
-                                set.delete(smallSmallItem.id),
-                        );
-                        return true;
-                    }
-                },
-            );
-        return Array.from(set);
-    }
-    /**
      * 深度查找
-     * @param array
-     * @param filter
+     * @param array 数组
+     * @param filter 过滤函数
      * @returns
      */
-    public static traverseFind<T extends IIdentityGroup<T>>(
-        array: TGroupCollection<T>,
-        filter: (
-            value: T,
-            index: number,
-            array: TGroupCollection<T>,
-        ) => boolean,
+    public static traverseFind<T extends IItem<T>>(
+        array: TGroup<T>,
+        filter: (value: T, index: number, array: TGroup<T>) => boolean,
     ): T | undefined {
         const list: T[] = this.normalize(array);
         for (let index = 0; index < list.length; index++) {
@@ -93,17 +51,13 @@ export abstract class ArrayUtils {
     }
     /**
      * 深度查找所有
-     * @param array
-     * @param filter
+     * @param array 数组
+     * @param filter 过滤函数
      * @returns
      */
-    public static traverseFindAll<T extends IIdentityGroup<T>>(
-        array: TGroupCollection<T>,
-        filter: (
-            value: T,
-            index: number,
-            array: TGroupCollection<T>,
-        ) => boolean,
+    public static traverseFindAll<T extends IItem<T>>(
+        array: TGroup<T>,
+        filter: (value: T, index: number, array: TGroup<T>) => boolean,
     ): T[] {
         const results: T[] = [],
             list: T[] = this.normalize(array);
@@ -122,17 +76,10 @@ export abstract class ArrayUtils {
     }
     /**
      * 标准化
-     * @param collection
+     * @param collection 集合
      * @returns
      */
-    public static normalize<T>(
-        collection?: TGroupCollection<T>,
-        filter?: (
-            value: T,
-            index: number,
-            array: TGroupCollection<T>,
-        ) => boolean,
-    ): T[] {
+    public static normalize<T>(collection?: TGroup<T>): T[] {
         if (!collection) return [];
         const result: T[] = (() => {
             // 数组直接返回
@@ -144,19 +91,17 @@ export abstract class ArrayUtils {
             else if (collection instanceof Set) return Array.from(collection);
             // 对象转为数组
             else if (ObjectUtils.isObject(collection))
-                return Object.values(collection as Record<any, T>);
+                return Object.values(collection as Record<Iteration, T>);
             return [];
         })();
-        return filter ? result.filter(filter) : result;
+        return result;
     }
     /**
      * 扁平化
-     * @param array
+     * @param array 数组
      * @returns
      */
-    public static expand<T extends IIdentityGroup<T>>(
-        array: TGroupCollection<T>,
-    ): T[] {
+    public static expand<T extends IItem<T>>(array: TGroup<T>): T[] {
         const list: T[] = [];
         this.traverse(array, (item) => {
             list.push(item);
@@ -165,23 +110,30 @@ export abstract class ArrayUtils {
     }
     /**
      * 随机项
-     * @param array
+     * @param array 数组
      * @returns
      */
-    public static rnItem<T>(array: T[]): T {
-        return array[MathUtils.rn(array.length - 1)];
+    public static rn<T>(array: TGroup<T>): T {
+        const list: T[] = this.normalize(array);
+        return list[MathUtils.rn(list.length - 1)];
     }
 }
 
-interface IIdentityGroup<T> {
+interface IItem<T> {
+    /**
+     * 标识符
+     */
     id?: string;
-    children?: TGroupCollection<T>;
+    /**
+     * 子项
+     */
+    children?: TGroup<T>;
 }
 
-type TGroupCollection<T> =
+type TGroup<T> =
     | T[]
-    | Map<any, T>
     | Set<T>
-    | Record<any, T>
+    | Map<Iteration, T>
+    | Record<Iteration, T>
     | null
     | undefined;

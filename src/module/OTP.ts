@@ -4,12 +4,12 @@ import { Secret, TOTP } from "otpauth";
  * OTP验证
  */
 export default class OTP {
-    constructor(private code?: string) {}
+    constructor(protected code?: string) {}
 
     /**
      * 密钥
      */
-    private secret?: Secret;
+    protected secret?: Secret;
     /**
      * 令牌
      */

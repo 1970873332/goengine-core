@@ -1,27 +1,18 @@
+import { StringUtils } from "../util/String";
+
 /**
  * 事件目标
  */
-export class EventTarget<E extends {}>
-    extends globalThis.EventTarget {
+export class EventTarget<E extends {}> extends globalThis.EventTarget {
     /**
      * 唯一标识
      */
-    public uuid: string = crypto.randomUUID
-        ? crypto.randomUUID()
-        : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-            const r = (Math.random() * 16) | 0;
-            const v = c === "x" ? r : (r & 0x3) | 0x8;
-            return v.toString(16);
-        });
+    public uuid: string = StringUtils.generateUUID();
     /**
      * 用户数据
      */
-    public userData: Partial<Record<string, unknown>> = {};
+    public userData: Partial<Record<Iteration, unknown>> = {};
 
-    /**
-     * 重新初始化
-     */
-    protected reInit(): void { }
     /**
      * 添加自定义事件
      * @param type
@@ -38,6 +29,7 @@ export class EventTarget<E extends {}>
         options?: boolean | AddEventListenerOptions,
     ): EventState<E> {
         super.addEventListener(type, callback as any, options);
+
         return new EventState(this, type, callback);
     }
     /**
@@ -74,7 +66,7 @@ export class EventState<T extends {}> {
         protected target: TTarget<T>,
         protected type: keyof T & string,
         protected callback: (event: any) => void,
-    ) { }
+    ) {}
 
     /**
      * 休息
@@ -97,10 +89,6 @@ export class EventState<T extends {}> {
     }
 }
 
-type TTarget<T extends {}> =
-    | EventTarget<T>
-    | EEventTarget
-    | undefined
-    | null;
+type TTarget<T extends {}> = EventTarget<T> | EEventTarget | undefined | null;
 
 type EEventTarget = HTMLElement | Window | WebSocket;
