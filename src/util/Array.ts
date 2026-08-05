@@ -131,9 +131,4 @@ interface IItem<T> {
 }
 
 type TGroup<T> =
-    | T[]
-    | Set<T>
-    | Map<Iteration, T>
-    | Record<Iteration, T>
-    | null
-    | undefined;
+    T[] | Set<T> | Map<Iteration, T> | Record<Iteration, T> | null | undefined;

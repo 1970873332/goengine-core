@@ -9,8 +9,7 @@ export default class CanvasComponent<
         canvas: HTMLCanvasElement,
         protected readonly contextType: Canvas.ContextType,
         protected readonly config:
-            | CanvasRenderingContext2DSettings
-            | WebGLContextAttributes,
+            CanvasRenderingContext2DSettings | WebGLContextAttributes,
     ) {
         super(canvas);
     }
