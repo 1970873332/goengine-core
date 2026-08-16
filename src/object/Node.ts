@@ -293,7 +293,7 @@ export default abstract class BaseNode<
      * 销毁
      */
     public destroy(): void {
-        this.clear(true);
+        this.clear();
         this.parent?.remove(this as unknown as T);
     }
 
