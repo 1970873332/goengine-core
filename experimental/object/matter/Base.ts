@@ -1,4 +1,4 @@
-import { DocumentUtils } from "@goengine/core/temporary/util/Document";
+import { DocumentUtils } from "@goengine/core/experimental/util/Document";
 import SceneComponent, {
     SceneComponentEvent,
 } from "@goengine/core/src/component/draw/Scene";
