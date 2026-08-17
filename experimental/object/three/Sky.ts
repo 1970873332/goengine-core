@@ -5,7 +5,7 @@ import {
     SRGBColorSpace,
     Vector3,
 } from "three";
-import { Sky } from "three/examples/jsm/objects/Sky";
+import { Sky } from "three/addons/objects/Sky";
 import BaseThreeMap, { BaseThreeMapEvent } from "./Base";
 
 /**

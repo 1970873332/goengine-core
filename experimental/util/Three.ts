@@ -7,7 +7,7 @@ import {
     Vector2,
     Vector3,
 } from "three";
-import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { GLTF, GLTFLoader } from "three/addons/loaders/GLTFLoader";
 
 /**
  * GLTF加载器

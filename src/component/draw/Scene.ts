@@ -1,4 +1,4 @@
-import Stats from "three/examples/jsm/libs/stats.module";
+import Stats from "three/addons/libs/stats.module";
 import TaskComponent, { TaskComponentEvent } from "../Task";
 /**
  * 场景组件
