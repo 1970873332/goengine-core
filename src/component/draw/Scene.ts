@@ -1,4 +1,3 @@
-import Stats from "three/addons/libs/stats.module";
 import TaskComponent, { TaskComponentEvent } from "../Task";
 /**
  * 场景组件
@@ -12,19 +11,11 @@ export default class SceneComponent<E extends IEvent> extends TaskComponent<E> {
     }
 
     /**
-     * 需要性能统计
-     */
-    protected readonly needStats: boolean = true;
-    /**
      * 尺寸监听
      */
     protected readonly obsever: ResizeObserver = new ResizeObserver(
         this.resize.bind(this),
     );
-    /**
-     * 性能统计
-     */
-    public stats?: Stats;
     /**
      * 画布宽度
      */
@@ -77,28 +68,11 @@ export default class SceneComponent<E extends IEvent> extends TaskComponent<E> {
         });
     }
 
-    protected main(): void {
-        if (this.needStats) {
-            this.stats = new Stats();
-            document.body.appendChild(this.stats.dom);
-        }
-    }
-
     protected addEvents(): void {
         this.obsever.observe(this.canvas);
     }
 
-    protected update(time: DOMHighResTimeStamp): void {
-        super.update(time);
-
-        this.stats?.update();
-    }
-
     public destroy(): void {
-        if (this.stats) {
-            this.stats.end();
-            this.stats.dom.remove();
-        }
         this.canvas.remove();
         this.obsever.disconnect();
 

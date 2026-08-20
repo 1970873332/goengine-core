@@ -17,7 +17,7 @@ export default class CanvasComponent<
     /**
      * 画布上下文
      */
-    declare protected _context: Canvas.Context;
+    declare protected _context: Canvas.Context | undefined;
 
     /**
      * 获取2d上下文
@@ -38,20 +38,13 @@ export default class CanvasComponent<
             : void 0;
     }
     /**
-     * 获取gpu上下文
-     */
-    public get gpu(): GPUCanvasContext | undefined {
-        return this.context instanceof GPUCanvasContext ? this.context : void 0;
-    }
-    /**
      * 获取上下文
      */
     public get context(): Canvas.Context | undefined {
-        return (this._context ??=
-            (this.canvas?.getContext(
-                this.contextType,
-                this.config,
-            ) as Canvas.Context) ?? void 0);
+        return this._context ??= this.canvas?.getContext(
+            this.contextType,
+            this.config,
+        ) ?? void 0;
     }
     /**
      * 清除画布
@@ -75,6 +68,6 @@ export default class CanvasComponent<
     }
 }
 
-interface IEvent extends SceneComponentEvent {}
+interface IEvent extends SceneComponentEvent { }
 
 export { IEvent as CanvasComponentEvent };

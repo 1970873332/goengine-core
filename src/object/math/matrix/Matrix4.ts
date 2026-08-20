@@ -536,27 +536,33 @@ export default class Matrix4 extends Matrix<TMatrix4, Matrix4> {
      * @returns
      */
     public lookAt(eye: Vector3, target: Vector3, up: Vector3): this {
+        // 前方向（视线方向）
         const zAxis = target.clone().sub(eye).normalize();
-        const xAxis = up.clone().cross(zAxis).normalize();
-        const yAxis = zAxis.clone().cross(xAxis).normalize();
+        // 右方向
+        const xAxis = zAxis.clone().cross(up).normalize();
+        // 上方向
+        const yAxis = xAxis.clone().cross(zAxis).normalize();
 
-        // 列主序 lookAt 矩阵
+        // 列主序视图矩阵：平移位于 m[12] / m[13] / m[14]
         return this.set([
             xAxis.x,
-            xAxis.y,
-            xAxis.z,
-            -xAxis.dot(eye),
             yAxis.x,
+            -zAxis.x,
+            0,
+
+            xAxis.y,
             yAxis.y,
+            -zAxis.y,
+            0,
+
+            xAxis.z,
             yAxis.z,
+            -zAxis.z,
+            0,
+
+            -xAxis.dot(eye),
             -yAxis.dot(eye),
-            zAxis.x,
-            zAxis.y,
-            zAxis.z,
-            -zAxis.dot(eye),
-            0,
-            0,
-            0,
+            zAxis.dot(eye),
             1,
         ]);
     }
